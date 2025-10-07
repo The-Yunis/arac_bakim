@@ -94,3 +94,6 @@ Bu proje MIT lisansı altında lisanslanmıştır.
 ## 📞 İletişim
 
 Proje hakkında sorularınız için issue açabilirsiniz.
+
+
+CODED BY YUNUS AÇIKGÖZ
