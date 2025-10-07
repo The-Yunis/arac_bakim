@@ -566,8 +566,10 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.db_manager = DatabaseManager()
+        self.github_sync = GitHubSync()  # GitHub senkronizasyon
         self.setup_ui()
         self.load_data()
+        self.auto_sync_on_startup()  # Açılışta otomatik senkronizasyon
     
     def setup_ui(self):
         """Ana pencere arayüzünü ayarla"""
@@ -736,6 +738,43 @@ class MainWindow(QMainWindow):
         top_add_btn.clicked.connect(self.add_record)
         toolbar_layout.addWidget(top_add_btn)
         
+        # GitHub senkronizasyon butonları
+        github_sync_btn = QPushButton("☁️ GitHub'a Yükle")
+        github_sync_btn.clicked.connect(self.sync_to_github)
+        github_sync_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #28a745;
+                color: white;
+                border: none;
+                padding: 10px 15px;
+                border-radius: 6px;
+                font-weight: bold;
+                font-size: 14px;
+            }
+            QPushButton:hover {
+                background-color: #218838;
+            }
+        """)
+        toolbar_layout.addWidget(github_sync_btn)
+        
+        github_download_btn = QPushButton("⬇️ GitHub'dan İndir")
+        github_download_btn.clicked.connect(self.sync_from_github)
+        github_download_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #17a2b8;
+                color: white;
+                border: none;
+                padding: 10px 15px;
+                border-radius: 6px;
+                font-weight: bold;
+                font-size: 14px;
+            }
+            QPushButton:hover {
+                background-color: #138496;
+            }
+        """)
+        toolbar_layout.addWidget(github_download_btn)
+        
         # Diğer işlemler açılır menüsü
         more_menu = QMenu(self)
         act_refresh = QAction("🔄 Yenile", self)
@@ -746,9 +785,13 @@ class MainWindow(QMainWindow):
         act_export.triggered.connect(self.export_excel)
         act_wipe = QAction("🗑️ Tümünü Sil", self)
         act_wipe.triggered.connect(self.delete_all_records)
+        act_github_token = QAction("🔑 GitHub Token Ayarla", self)
+        act_github_token.triggered.connect(self.setup_github_token)
         more_menu.addAction(act_refresh)
         more_menu.addAction(act_import)
         more_menu.addAction(act_export)
+        more_menu.addSeparator()
+        more_menu.addAction(act_github_token)
         more_menu.addSeparator()
         more_menu.addAction(act_wipe)
 
@@ -1889,6 +1932,213 @@ class MainWindow(QMainWindow):
             QTableWidget { background: #ffffff; alternate-background-color: #f9fbff; color: #1a2b49; border: 1px solid #cfd8e3; }
             QHeaderView::section { background: #eef3ff; color: #1a2b49; border: 1px solid #cfd8e3; }
         """)
+    
+    # ---------------------- GitHub Senkronizasyon Metodları ----------------------
+    def auto_sync_on_startup(self):
+        """Açılışta otomatik senkronizasyon"""
+        try:
+            # GitHub'dan veritabanını indir
+            success, message = self.github_sync.download_database()
+            if success:
+                # Veritabanı güncellendi, tabloyu yenile
+                self.load_data()
+                print(f"✅ {message}")
+            else:
+                print(f"⚠️ GitHub senkronizasyon: {message}")
+        except Exception as e:
+            print(f"❌ GitHub senkronizasyon hatası: {e}")
+    
+    def sync_to_github(self):
+        """Veritabanını GitHub'a yükle"""
+        try:
+            success, message = self.github_sync.upload_database()
+            if success:
+                QMessageBox.information(self, "GitHub Senkronizasyon", f"✅ {message}")
+            else:
+                QMessageBox.warning(self, "GitHub Senkronizasyon", f"❌ {message}")
+        except Exception as e:
+            QMessageBox.critical(self, "GitHub Senkronizasyon", f"❌ Hata: {str(e)}")
+    
+    def sync_from_github(self):
+        """GitHub'dan veritabanını indir"""
+        try:
+            success, message = self.github_sync.download_database()
+            if success:
+                # Veritabanı güncellendi, tabloyu yenile
+                self.load_data()
+                QMessageBox.information(self, "GitHub Senkronizasyon", f"✅ {message}")
+            else:
+                QMessageBox.warning(self, "GitHub Senkronizasyon", f"❌ {message}")
+        except Exception as e:
+            QMessageBox.critical(self, "GitHub Senkronizasyon", f"❌ Hata: {str(e)}")
+    
+    def setup_github_token(self):
+        """GitHub token ayarla"""
+        from PyQt6.QtWidgets import QInputDialog
+        
+        token, ok = QInputDialog.getText(
+            self, 
+            "GitHub Token", 
+            "GitHub Personal Access Token girin:\n\n"
+            "1. https://github.com/settings/tokens adresine gidin\n"
+            "2. 'Generate new token (classic)' tıklayın\n"
+            "3. 'repo' yetkisini seçin\n"
+            "4. Token'ı kopyalayıp buraya yapıştırın",
+            QLineEdit.Password
+        )
+        
+        if ok and token.strip():
+            if self.github_sync.save_token(token.strip()):
+                QMessageBox.information(self, "GitHub Token", "✅ Token başarıyla kaydedildi!")
+            else:
+                QMessageBox.warning(self, "GitHub Token", "❌ Token kaydedilemedi!")
+    
+    def closeEvent(self, event):
+        """Pencere kapanırken otomatik senkronizasyon"""
+        try:
+            # Kapanışta veritabanını GitHub'a yükle
+            success, message = self.github_sync.upload_database()
+            if success:
+                print(f"✅ Kapanış senkronizasyonu: {message}")
+            else:
+                print(f"⚠️ Kapanış senkronizasyonu: {message}")
+        except Exception as e:
+            print(f"❌ Kapanış senkronizasyonu hatası: {e}")
+        
+        # Normal kapanış işlemi
+        event.accept()
+
+# ---------------------- GitHub Veritabanı Senkronizasyonu ----------------------
+class GitHubSync:
+    """GitHub ile veritabanı senkronizasyon sınıfı"""
+    
+    def __init__(self, repo_owner="The-Yunis", repo_name="arac_bakim", db_filename="bakim_kayitlari.db"):
+        self.repo_owner = repo_owner
+        self.repo_name = repo_name
+        self.db_filename = db_filename
+        self.github_token = None
+        self.load_token()
+    
+    def load_token(self):
+        """GitHub token'ını yükle (güvenlik için ayrı dosyadan)"""
+        try:
+            # Token dosyası varsa oku
+            if os.path.exists("github_token.txt"):
+                with open("github_token.txt", "r") as f:
+                    self.github_token = f.read().strip()
+            else:
+                # İlk kullanımda token iste
+                self.github_token = None
+        except Exception:
+            self.github_token = None
+    
+    def save_token(self, token):
+        """GitHub token'ını kaydet"""
+        try:
+            with open("github_token.txt", "w") as f:
+                f.write(token)
+            self.github_token = token
+            return True
+        except Exception:
+            return False
+    
+    def upload_database(self):
+        """Veritabanını GitHub'a yükle"""
+        if not self.github_token:
+            return False, "GitHub token bulunamadı. Lütfen ayarlardan token girin."
+        
+        try:
+            # Veritabanı dosyasını oku
+            if not os.path.exists(self.db_filename):
+                return False, "Veritabanı dosyası bulunamadı."
+            
+            with open(self.db_filename, "rb") as f:
+                db_content = f.read()
+            
+            # Base64 encode
+            import base64
+            db_encoded = base64.b64encode(db_content).decode('utf-8')
+            
+            # GitHub API ile dosyayı yükle
+            url = f"https://api.github.com/repos/{self.repo_owner}/{self.repo_name}/contents/{self.db_filename}"
+            
+            headers = {
+                "Authorization": f"token {self.github_token}",
+                "Accept": "application/vnd.github.v3+json"
+            }
+            
+            # Önce dosyanın mevcut olup olmadığını kontrol et
+            response = requests.get(url, headers=headers)
+            sha = None
+            if response.status_code == 200:
+                sha = response.json().get("sha")
+            
+            data = {
+                "message": f"Veritabanı güncellendi - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                "content": db_encoded,
+                "branch": "main"
+            }
+            
+            if sha:
+                data["sha"] = sha
+            
+            response = requests.put(url, headers=headers, json=data)
+            
+            if response.status_code in [200, 201]:
+                return True, "Veritabanı başarıyla GitHub'a yüklendi."
+            else:
+                return False, f"GitHub yükleme hatası: {response.status_code} - {response.text}"
+                
+        except Exception as e:
+            return False, f"Yükleme hatası: {str(e)}"
+    
+    def download_database(self):
+        """Veritabanını GitHub'dan indir"""
+        if not self.github_token:
+            return False, "GitHub token bulunamadı. Lütfen ayarlardan token girin."
+        
+        try:
+            # GitHub API ile dosyayı indir
+            url = f"https://api.github.com/repos/{self.repo_owner}/{self.repo_name}/contents/{self.db_filename}"
+            
+            headers = {
+                "Authorization": f"token {self.github_token}",
+                "Accept": "application/vnd.github.v3+json"
+            }
+            
+            response = requests.get(url, headers=headers)
+            
+            if response.status_code == 200:
+                data = response.json()
+                db_content = base64.b64decode(data["content"])
+                
+                # Yerel veritabanını yedekle
+                if os.path.exists(self.db_filename):
+                    shutil.copy(self.db_filename, f"{self.db_filename}.backup")
+                
+                # Yeni veritabanını kaydet
+                with open(self.db_filename, "wb") as f:
+                    f.write(db_content)
+                
+                return True, "Veritabanı başarıyla GitHub'dan indirildi."
+            else:
+                return False, f"GitHub indirme hatası: {response.status_code} - {response.text}"
+                
+        except Exception as e:
+            return False, f"İndirme hatası: {str(e)}"
+    
+    def check_connection(self):
+        """GitHub bağlantısını test et"""
+        if not self.github_token:
+            return False, "GitHub token bulunamadı."
+        
+        try:
+            url = f"https://api.github.com/repos/{self.repo_owner}/{self.repo_name}"
+            headers = {"Authorization": f"token {self.github_token}"}
+            response = requests.get(url, headers=headers)
+            return response.status_code == 200, f"Bağlantı durumu: {response.status_code}"
+        except Exception as e:
+            return False, f"Bağlantı hatası: {str(e)}"
 
 def main():
     """Ana fonksiyon"""
