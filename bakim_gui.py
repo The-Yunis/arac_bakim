@@ -13,6 +13,7 @@ import requests  # GitHub API için
 import json      # JSON işlemleri için
 import shutil    # Dosya kopyalama için
 import subprocess # Sistem komutları için
+import base64    # GitHub API için base64 encoding
 from datetime import datetime
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
@@ -2056,7 +2057,6 @@ class GitHubSync:
                 db_content = f.read()
             
             # Base64 encode
-            import base64
             db_encoded = base64.b64encode(db_content).decode('utf-8')
             
             # GitHub API ile dosyayı yükle
