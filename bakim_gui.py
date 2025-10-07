@@ -774,11 +774,10 @@ class MainWindow(QMainWindow):
         
         # Karanlık mod: varsayılan uygulanacak, buton kaldırıldı
         
-        # Butonlar için ortak stil
+        # Butonlar için ortak stil - basitleştirilmiş
         button_style = """
             QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #ffffff, stop:1 #f8f9fa);
+                background-color: #ffffff;
                 color: #495057;
                 border: 2px solid #dee2e6;
                 padding: 12px 20px;
@@ -789,23 +788,37 @@ class MainWindow(QMainWindow):
                 min-height: 20px;
             }
             QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #e3f2fd, stop:1 #bbdefb);
+                background-color: #e3f2fd;
                 border-color: #2196f3;
                 color: #1976d2;
-                transform: translateY(-1px);
             }
             QPushButton:pressed {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #bbdefb, stop:1 #90caf9);
+                background-color: #bbdefb;
                 border-color: #1976d2;
             }
         """
         
         # ToolButton için aynı stil
-        toolbutton_style = button_style + """
+        toolbutton_style = """
             QToolButton {
+                background-color: #ffffff;
+                color: #495057;
+                border: 2px solid #dee2e6;
+                padding: 12px 20px;
+                border-radius: 12px;
+                font-weight: 600;
+                font-size: 14px;
                 min-width: 160px;
+                min-height: 20px;
+            }
+            QToolButton:hover {
+                background-color: #e3f2fd;
+                border-color: #2196f3;
+                color: #1976d2;
+            }
+            QToolButton:pressed {
+                background-color: #bbdefb;
+                border-color: #1976d2;
             }
         """
         
