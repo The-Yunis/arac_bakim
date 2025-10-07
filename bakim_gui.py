@@ -695,85 +695,148 @@ class MainWindow(QMainWindow):
         """Üst toolbar oluştur"""
         toolbar_frame = QFrame()
         toolbar_frame.setFrameStyle(QFrame.Shape.Box)
-        # Light theme with gradient
+        # Modern gradient toolbar
         toolbar_frame.setStyleSheet("""
             QFrame {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #ffffff, stop:1 #e9f0ff);
-                border: 1px solid #cfd8e3;
-                border-radius: 10px;
-                margin: 6px;
+                    stop:0 #ffffff, stop:0.5 #f8f9fa, stop:1 #e3f2fd);
+                border: 2px solid #e1f5fe;
+                border-radius: 16px;
+                margin: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             }
         """)
         
         toolbar_layout = QHBoxLayout()
         toolbar_frame.setLayout(toolbar_layout)
         
-        # Başlık
-        title_label = QLabel("Öztaç Petrol A.Ş Araç Bakım Kayıtları Yönetim Sistemi")
-        title_label.setStyleSheet("""
+        # Logo ve başlık container
+        title_container = QHBoxLayout()
+        
+        # SVG Logo (basit SVG icon)
+        logo_svg = """
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="3" width="18" height="18" rx="3" fill="#2196f3" stroke="#1976d2" stroke-width="2"/>
+            <path d="M8 12h8M8 8h8M8 16h5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="18" cy="6" r="3" fill="#4caf50"/>
+            <path d="M16.5 5.5l3 3" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        """
+        
+        logo_label = QLabel()
+        logo_label.setFixedSize(48, 48)
+        logo_label.setStyleSheet("""
             QLabel {
-                font-size: 22px;
-                font-weight: 800;
-                color: #1a2b49;
-                padding: 10px;
+                background: transparent;
+                border: none;
             }
         """)
-        toolbar_layout.addWidget(title_label)
         
-        # Orta kısımda arama
+        # SVG'yi QPixmap'e dönüştür
+        from PyQt6.QtSvg import QSvgRenderer
+        from PyQt6.QtGui import QPainter
+        from PyQt6.QtCore import QByteArray
+        
+        svg_data = QByteArray(logo_svg.encode('utf-8'))
+        renderer = QSvgRenderer(svg_data)
+        pixmap = QPixmap(48, 48)
+        pixmap.fill(Qt.GlobalColor.transparent)
+        painter = QPainter(pixmap)
+        renderer.render(painter)
+        painter.end()
+        logo_label.setPixmap(pixmap)
+        
+        title_container.addWidget(logo_label)
+        
+        # Başlık
+        title_label = QLabel("Öztaç Petrol A.Ş\nAraç Bakım Kayıtları Yönetim Sistemi")
+        title_label.setStyleSheet("""
+            QLabel {
+                font-size: 18px;
+                font-weight: 700;
+                color: #1a2b49;
+                padding: 8px 12px;
+                line-height: 1.2;
+            }
+        """)
+        title_container.addWidget(title_label)
+        title_container.addStretch()
+        
+        toolbar_layout.addLayout(title_container)
+        
+        # Modern arama kutusu
         search_wrap = QHBoxLayout()
         self.search_edit = QLineEdit()
-        self.search_edit.setPlaceholderText("Plaka ile ara...")
+        self.search_edit.setPlaceholderText("🔍 Plaka ile ara...")
         self.search_edit.textChanged.connect(self.search_records)
-        self.search_edit.setFixedWidth(320)
-        self.search_edit.setStyleSheet("QLineEdit{padding:8px 12px;border:1px solid #cfd8e3;border-radius:8px;background:#ffffff}")
+        self.search_edit.setFixedWidth(350)
+        self.search_edit.setFixedHeight(40)
+        self.search_edit.setStyleSheet("""
+            QLineEdit {
+                padding: 10px 16px;
+                border: 2px solid #e1f5fe;
+                border-radius: 20px;
+                background: #ffffff;
+                font-size: 14px;
+                font-weight: 500;
+            }
+            QLineEdit:focus {
+                border-color: #2196f3;
+                background: #f8f9fa;
+            }
+            QLineEdit:hover {
+                border-color: #bbdefb;
+            }
+        """)
         search_wrap.addWidget(self.search_edit)
         toolbar_layout.addLayout(search_wrap)
         toolbar_layout.addStretch()
         
         # Karanlık mod: varsayılan uygulanacak, buton kaldırıldı
         
+        # Butonlar için ortak stil
+        button_style = """
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #ffffff, stop:1 #f8f9fa);
+                color: #495057;
+                border: 2px solid #dee2e6;
+                padding: 12px 20px;
+                border-radius: 12px;
+                font-weight: 600;
+                font-size: 14px;
+                min-width: 140px;
+                min-height: 20px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #e3f2fd, stop:1 #bbdefb);
+                border-color: #2196f3;
+                color: #1976d2;
+                transform: translateY(-1px);
+            }
+            QPushButton:pressed {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #bbdefb, stop:1 #90caf9);
+                border-color: #1976d2;
+            }
+        """
+        
         # Yeni kayıt butonu
         top_add_btn = QPushButton("➕ Yeni Kayıt")
         top_add_btn.clicked.connect(self.add_record)
+        top_add_btn.setStyleSheet(button_style)
         toolbar_layout.addWidget(top_add_btn)
         
         # GitHub senkronizasyon butonları
         github_sync_btn = QPushButton("☁️ Veritabanı Yedekle")
         github_sync_btn.clicked.connect(self.sync_to_github)
-        github_sync_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #28a745;
-                color: white;
-                border: none;
-                padding: 10px 15px;
-                border-radius: 6px;
-                font-weight: bold;
-                font-size: 14px;
-            }
-            QPushButton:hover {
-                background-color: #218838;
-            }
-        """)
+        github_sync_btn.setStyleSheet(button_style)
         toolbar_layout.addWidget(github_sync_btn)
         
         github_download_btn = QPushButton("⬇️ Veritabanı İndir")
         github_download_btn.clicked.connect(self.sync_from_github)
-        github_download_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #17a2b8;
-                color: white;
-                border: none;
-                padding: 10px 15px;
-                border-radius: 6px;
-                font-weight: bold;
-                font-size: 14px;
-            }
-            QPushButton:hover {
-                background-color: #138496;
-            }
-        """)
+        github_download_btn.setStyleSheet(button_style)
         toolbar_layout.addWidget(github_download_btn)
         
         # Diğer işlemler açılır menüsü
@@ -794,20 +857,17 @@ class MainWindow(QMainWindow):
 
         from PyQt6.QtWidgets import QToolButton
         more_btn = QToolButton()
-        more_btn.setText("Diğer İşlemler ▾")
+        more_btn.setText("⚙️ Diğer İşlemler ▾")
         more_btn.setMenu(more_menu)
         more_btn.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
-        more_btn.setStyleSheet("""
-            QToolButton{background:#ffffff;color:#1a2b49;border:1px solid #cfd8e3;padding:8px 12px;border-radius:8px;}
-            QToolButton:hover{background:#f5f9ff;border-color:#1a73e8}
+        more_btn.setStyleSheet(button_style + """
+            QToolButton {
+                min-width: 160px;
+            }
         """)
         toolbar_layout.addWidget(more_btn)
 
-        # Light button style for primary action
-        top_add_btn.setStyleSheet("""
-            QPushButton{background:#1a73e8;color:#fff;border:none;padding:8px 12px;border-radius:8px;}
-            QPushButton:hover{background:#1765c1}
-        """)
+        # Buton stilleri zaten yukarıda tanımlandı
         
         layout.addWidget(toolbar_frame)
         
