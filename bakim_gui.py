@@ -713,62 +713,18 @@ class MainWindow(QMainWindow):
         # Logo ve başlık container
         title_container = QHBoxLayout()
         
-        # Basit Öztaç İnşaat Logo SVG
-        logo_svg = """
-        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Ana daire -->
-            <circle cx="24" cy="24" r="22" fill="#1e40af" stroke="#1e3a8a" stroke-width="2"/>
-            
-            <!-- İnşaat temalı basit bina -->
-            <rect x="12" y="16" width="8" height="16" fill="white" rx="1"/>
-            <rect x="22" y="12" width="8" height="20" fill="white" rx="1"/>
-            <rect x="32" y="18" width="8" height="14" fill="white" rx="1"/>
-            
-            <!-- Basit pencereler -->
-            <rect x="14" y="20" width="2" height="2" fill="#1e40af"/>
-            <rect x="18" y="20" width="2" height="2" fill="#1e40af"/>
-            <rect x="24" y="16" width="2" height="2" fill="#1e40af"/>
-            <rect x="28" y="16" width="2" height="2" fill="#1e40af"/>
-            <rect x="34" y="22" width="2" height="2" fill="#1e40af"/>
-            <rect x="38" y="22" width="2" height="2" fill="#1e40af"/>
-            
-            <!-- Merkez yazı -->
-            <text x="24" y="26" text-anchor="middle" font-family="Arial" font-size="6" font-weight="bold" fill="white">ÖZTAÇ</text>
-        </svg>
-        """
-        
-        logo_label = QLabel()
+        # Basit emoji logo
+        logo_label = QLabel("🏗️")
         logo_label.setFixedSize(48, 48)
         logo_label.setStyleSheet("""
             QLabel {
+                font-size: 32px;
+                color: #1e40af;
                 background: transparent;
                 border: none;
+                text-align: center;
             }
         """)
-        
-        # SVG'yi QPixmap'e dönüştür
-        try:
-            from PyQt6.QtSvg import QSvgRenderer
-            from PyQt6.QtGui import QPainter
-            from PyQt6.QtCore import QByteArray
-            
-            svg_data = QByteArray(logo_svg.encode('utf-8'))
-            renderer = QSvgRenderer(svg_data)
-            if renderer.isValid():
-                pixmap = QPixmap(48, 48)
-                pixmap.fill(Qt.GlobalColor.transparent)
-                painter = QPainter(pixmap)
-                renderer.render(painter)
-                painter.end()
-                logo_label.setPixmap(pixmap)
-            else:
-                # SVG render hatası durumunda basit text logo
-                logo_label.setText("🏗️")
-                logo_label.setStyleSheet("font-size: 32px; color: #1e40af;")
-        except Exception as e:
-            # Hata durumunda emoji logo
-            logo_label.setText("🏗️")
-            logo_label.setStyleSheet("font-size: 32px; color: #1e40af;")
         
         title_container.addWidget(logo_label)
         
