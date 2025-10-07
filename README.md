@@ -1,4 +1,4 @@
-# Araç Bakım Kayıtları Yönetim Sistemi
+# Araç Bakım Kayıtları Yönetim Sistemi 
 
 Modern PyQt6 tabanlı araç bakım takip uygulaması. Araçlarınızın bakım geçmişini, kilometre takibini ve gelecek bakım planlarını yönetmenizi sağlar.
 
@@ -94,8 +94,3 @@ Bu proje MIT lisansı altında lisanslanmıştır.
 ## 📞 İletişim
 
 Proje hakkında sorularınız için issue açabilirsiniz.
-
-## 🙏 Teşekkürler
-
-- PyQt6 ekibine modern GUI framework'ü için
-- Python topluluğuna harika kütüphaneler için
