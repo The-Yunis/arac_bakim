@@ -9,23 +9,22 @@ Modern PyQt6 tabanlı araç bakım takip uygulaması. Araçlarınızın bakım g
 - **Kilometre Takibi**: Araç kilometrelerini kaydetme ve analiz
 - **Bakım Planlama**: Gelecek bakım tarihlerini planlama
 - **Excel İçe/Dışa Aktarma**: Verilerinizi Excel formatında yedekleme
+- **GitHub Senkronizasyonu**: Veritabanını GitHub'da otomatik yedekleme
+- **Modern Dashboard**: KPI kartları ve analiz grafikleri
 - **Modern Arayüz**: Kullanıcı dostu PyQt6 arayüzü
 - **Veritabanı**: SQLite ile güvenli veri saklama
 
-## 📋 Gereksinimler
+## 🚀 Hızlı Başlangıç
 
-- Python 3.8+
-- PyQt6
-- pandas
-- openpyxl
-- requests
-- PyGithub
+### 📦 EXE Dosyası ile (Önerilen)
+1. **İndirin**: `dist/AracBakimYonetim.app` dosyasını indirin
+2. **Çalıştırın**: Dosyaya çift tıklayın
+3. **Kullanın**: Program otomatik olarak GitHub'dan veri indirecek
 
-## 🚀 Kurulum
-
+### 🐍 Python ile
 1. Repository'yi klonlayın:
 ```bash
-git clone https://github.com/kullaniciadi/arac_bakim.git
+git clone https://github.com/The-Yunis/arac_bakim.git
 cd arac_bakim
 ```
 
@@ -39,35 +38,103 @@ pip install -r requirements.txt
 python bakim_gui.py
 ```
 
+## 📋 Gereksinimler
+
+### EXE Kullanımı
+- **macOS**: 10.15+ (Catalina ve üzeri)
+- **İnternet**: İlk çalıştırmada GitHub bağlantısı gerekli
+
+### Python Geliştirme
+- Python 3.8+
+- PyQt6
+- pandas
+- openpyxl
+- requests
+- PyGithub
+
 ## 📖 Kullanım
 
-### Araç Ekleme
-1. "Araçlar" sekmesine gidin
-2. "Yeni Araç Ekle" butonuna tıklayın
-3. Araç bilgilerini doldurun
-4. "Kaydet" butonuna tıklayın
+### 🏠 Ana Sayfa (Dashboard)
+- **KPI Kartları**: Toplam kayıt, araç sayısı, son bakım tarihi
+- **Zaman Analizi**: Bu ay, bu hafta, yaklaşan bakımlar
+- **En Aktif Araçlar**: En çok bakım yapılan araçlar listesi
+- **Bölge Analizi**: Bölge bazında bakım istatistikleri
 
-### Bakım Kaydı Ekleme
-1. "Bakım Kayıtları" sekmesine gidin
-2. "Yeni Bakım Ekle" butonuna tıklayın
-3. Bakım detaylarını doldurun
-4. "Kaydet" butonuna tıklayın
+### 📝 Kayıt Yönetimi
+1. **Yeni Kayıt**: "➕ Yeni Kayıt" butonuna tıklayın
+2. **Düzenleme**: Kayıt üzerine çift tıklayın
+3. **Silme**: Kayıt seçip "🗑️ Kayıt Sil" butonuna tıklayın
+4. **Arama**: Plaka ile arama yapın
 
-### Excel İçe Aktarma
-1. "Veri Yönetimi" sekmesine gidin
-2. "Excel'den İçe Aktar" butonuna tıklayın
-3. Excel dosyasını seçin
-4. Sütun eşleştirmelerini yapın
+### 📊 Excel İşlemleri
+1. **İçe Aktarma**: "📁 Excel İçe Aktar" menüsünden
+2. **Dışa Aktarma**: "📤 Excel Dışa Aktar" menüsünden
+3. **Sütun Eşleştirme**: Otomatik sütun tanıma
+
+### ☁️ GitHub Senkronizasyonu
+- **Otomatik Yedekleme**: Program kapanırken otomatik yedekleme
+- **Otomatik İndirme**: Program açılırken otomatik indirme
+- **Manuel İşlemler**: "Diğer İşlemler" menüsünden
 
 ## 🗂️ Proje Yapısı
 
 ```
 arac_bakim/
-├── bakim_gui.py          # Ana uygulama dosyası
-├── requirements.txt       # Python bağımlılıkları
-├── bakim_kayitlari.db     # SQLite veritabanı
-└── README.md             # Bu dosya
+├── bakim_gui.py              # Ana uygulama dosyası
+├── requirements.txt           # Python bağımlılıkları
+├── bakim_kayitlari.db         # SQLite veritabanı
+├── dist/                      # EXE dosyaları
+│   ├── AracBakimYonetim       # macOS executable
+│   └── AracBakimYonetim.app/  # macOS app bundle
+├── AracBakimYonetim.spec      # PyInstaller konfigürasyonu
+└── README.md                  # Bu dosya
 ```
+
+## 🔧 EXE Oluşturma
+
+Kendi EXE dosyanızı oluşturmak için:
+
+```bash
+# PyInstaller yükleyin
+pip install pyinstaller
+
+# EXE oluşturun
+pyinstaller --onefile --windowed --name=AracBakimYonetim \
+  --add-data="bakim_kayitlari.db:." \
+  --hidden-import=PyQt6.QtCore \
+  --hidden-import=PyQt6.QtWidgets \
+  --hidden-import=PyQt6.QtGui \
+  --hidden-import=pandas \
+  --hidden-import=openpyxl \
+  --hidden-import=requests \
+  --exclude-module=PyQt5 \
+  --exclude-module=PySide6 \
+  bakim_gui.py
+```
+
+## 🎯 Özellik Detayları
+
+### 📊 Dashboard
+- **6 Ana KPI Kartı**: Toplam kayıt, araç, son bakım, bu ay, bu hafta, yaklaşan bakım
+- **En Aktif Araçlar**: Top 5 araç listesi
+- **Bölge Analizi**: Bölge bazında istatistikler
+- **Personel Analizi**: Bakım yapan personel istatistikleri
+
+### 🔄 GitHub Entegrasyonu
+- **Otomatik Senkronizasyon**: Git komutları ile
+- **Veri Güvenliği**: Tüm veriler GitHub'da yedekli
+- **Çoklu Cihaz**: Farklı bilgisayarlarda aynı veri
+
+### 📈 Excel Desteği
+- **İçe Aktarma**: Mevcut Excel dosyalarını import
+- **Dışa Aktarma**: Verileri Excel formatında export
+- **Sütun Eşleştirme**: Otomatik sütun tanıma
+
+## 🚨 Önemli Notlar
+
+- **İlk Çalıştırma**: İnternet bağlantısı gerekli (GitHub'dan veri indirme)
+- **Veri Güvenliği**: Tüm veriler GitHub'da otomatik yedeklenir
+- **Çoklu Kullanım**: Aynı GitHub repo'sunu kullanan tüm cihazlar senkronize
 
 ## 🔧 Geliştirme
 
@@ -95,5 +162,6 @@ Bu proje MIT lisansı altında lisanslanmıştır.
 
 Proje hakkında sorularınız için issue açabilirsiniz.
 
+---
 
-CODED BY YUNUS AÇIKGÖZ
+**CODED BY YUNUS AÇIKGÖZ**
