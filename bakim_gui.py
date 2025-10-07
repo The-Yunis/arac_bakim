@@ -802,6 +802,13 @@ class MainWindow(QMainWindow):
             }
         """
         
+        # ToolButton için aynı stil
+        toolbutton_style = button_style + """
+            QToolButton {
+                min-width: 160px;
+            }
+        """
+        
         # Yeni kayıt butonu
         top_add_btn = QPushButton("➕ Yeni Kayıt")
         top_add_btn.clicked.connect(self.add_record)
@@ -839,11 +846,7 @@ class MainWindow(QMainWindow):
         more_btn.setText("⚙️ Diğer İşlemler ▾")
         more_btn.setMenu(more_menu)
         more_btn.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
-        more_btn.setStyleSheet(button_style + """
-            QToolButton {
-                min-width: 160px;
-            }
-        """)
+        more_btn.setStyleSheet(toolbutton_style)
         toolbar_layout.addWidget(more_btn)
 
         # Buton stilleri zaten yukarıda tanımlandı
