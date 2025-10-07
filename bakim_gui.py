@@ -713,13 +713,49 @@ class MainWindow(QMainWindow):
         # Logo ve başlık container
         title_container = QHBoxLayout()
         
-        # SVG Logo (basit SVG icon)
+        # Öztaç İnşaat Logo SVG (PNG'den dönüştürülmüş)
         logo_svg = """
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="3" y="3" width="18" height="18" rx="3" fill="#2196f3" stroke="#1976d2" stroke-width="2"/>
-            <path d="M8 12h8M8 8h8M8 16h5" stroke="white" stroke-width="2" stroke-linecap="round"/>
-            <circle cx="18" cy="6" r="3" fill="#4caf50"/>
-            <path d="M16.5 5.5l3 3" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        <svg width="48" height="48" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Öztaç İnşaat Logo Tasarımı -->
+            <defs>
+                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
+                    <stop offset="50%" style="stop-color:#3b82f6;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#60a5fa;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+            
+            <!-- Ana daire -->
+            <circle cx="100" cy="100" r="90" fill="url(#logoGradient)" stroke="#1e40af" stroke-width="4"/>
+            
+            <!-- İnşaat temalı ikonlar -->
+            <!-- Bina silüeti -->
+            <rect x="60" y="80" width="20" height="40" fill="white" rx="2"/>
+            <rect x="85" y="70" width="20" height="50" fill="white" rx="2"/>
+            <rect x="110" y="85" width="20" height="35" fill="white" rx="2"/>
+            
+            <!-- Pencereler -->
+            <rect x="65" y="90" width="6" height="6" fill="#1e40af"/>
+            <rect x="75" y="90" width="6" height="6" fill="#1e40af"/>
+            <rect x="90" y="80" width="6" height="6" fill="#1e40af"/>
+            <rect x="100" y="80" width="6" height="6" fill="#1e40af"/>
+            <rect x="115" y="95" width="6" height="6" fill="#1e40af"/>
+            <rect x="125" y="95" width="6" height="6" fill="#1e40af"/>
+            
+            <!-- Kapılar -->
+            <rect x="68" y="115" width="4" height="5" fill="#1e40af"/>
+            <rect x="95" y="105" width="4" height="15" fill="#1e40af"/>
+            <rect x="118" y="115" width="4" height="5" fill="#1e40af"/>
+            
+            <!-- Çatılar -->
+            <polygon points="50,80 70,60 90,80" fill="white"/>
+            <polygon points="75,70 95,50 115,70" fill="white"/>
+            <polygon points="100,85 120,65 140,85" fill="white"/>
+            
+            <!-- Merkez yazı alanı -->
+            <circle cx="100" cy="100" r="25" fill="white" opacity="0.9"/>
+            <text x="100" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#1e40af">ÖZTAÇ</text>
+            <text x="100" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" fill="#1e40af">İNŞAAT</text>
         </svg>
         """
         
@@ -749,7 +785,7 @@ class MainWindow(QMainWindow):
         title_container.addWidget(logo_label)
         
         # Başlık
-        title_label = QLabel("Öztaç Petrol A.Ş\nAraç Bakım Kayıtları Yönetim Sistemi")
+        title_label = QLabel("Öztaç İnşaat A.Ş\nAraç Bakım Kayıtları Yönetim Sistemi")
         title_label.setStyleSheet("""
             QLabel {
                 font-size: 18px;
