@@ -315,9 +315,22 @@ class DatabaseManager:
             ''')
             en_cok_bakim = cursor.fetchone()
             
-            # En son bakım tarihi
-            cursor.execute("SELECT MAX(tarih) FROM bakimlar WHERE tarih IS NOT NULL")
-            son_bakim = cursor.fetchone()[0]
+            # En son bakım tarihi - tarih formatını düzelt
+            cursor.execute("""
+                SELECT tarih FROM bakimlar 
+                WHERE tarih IS NOT NULL AND tarih != ''
+                ORDER BY 
+                    CASE 
+                        WHEN length(tarih) = 8 AND tarih GLOB '[0-9]*' THEN 
+                            substr(tarih, 5, 4) || '-' || substr(tarih, 3, 2) || '-' || substr(tarih, 1, 2)
+                        WHEN length(tarih) = 10 AND tarih LIKE '%.%.%' THEN
+                            substr(tarih, 7, 4) || '-' || substr(tarih, 4, 2) || '-' || substr(tarih, 1, 2)
+                        ELSE tarih
+                    END DESC
+                LIMIT 1
+            """)
+            son_bakim = cursor.fetchone()
+            son_bakim = son_bakim[0] if son_bakim else None
             
             return {
                 'toplam_kayit': toplam_kayit,
@@ -1090,149 +1103,98 @@ class MainWindow(QMainWindow):
         dlg.setLayout(v)
         dlg.exec()
 
+    def create_kpi_card(self, icon, title, value, color, bg_color):
+        """Modern KPI kartı oluştur"""
+        card = QLabel()
+        card.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        card.setFixedHeight(100)
+        card.setMinimumWidth(200)
+        
+        # İçerik formatı
+        content = f"""
+        <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 32px; margin-bottom: 8px;">{icon}</div>
+            <div style="font-size: 16px; font-weight: bold; color: {color}; margin-bottom: 4px;">{title}</div>
+            <div style="font-size: 24px; font-weight: bold; color: {color};">{value}</div>
+        </div>
+        """
+        card.setText(content)
+        
+        # Stil
+        card.setStyleSheet(f"""
+            QLabel {{
+                background-color: {bg_color};
+                border: 2px solid {color};
+                border-radius: 12px;
+                color: {color};
+                font-weight: bold;
+            }}
+        """)
+        
+        return card
+
+    def update_kpi_card(self, card, icon, title, value):
+        """KPI kartını güncelle"""
+        content = f"""
+        <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 32px; margin-bottom: 8px;">{icon}</div>
+            <div style="font-size: 16px; font-weight: bold; color: #333; margin-bottom: 4px;">{title}</div>
+            <div style="font-size: 24px; font-weight: bold; color: #333;">{value}</div>
+        </div>
+        """
+        card.setText(content)
+
     def create_dashboard_panel(self):
-        """Dashboard paneli"""
+        """Dashboard paneli - Modern tasarım"""
         panel = QWidget()
         layout = QVBoxLayout()
+        layout.setSpacing(20)
+        layout.setContentsMargins(20, 20, 20, 20)
         
-        # Üstte özet kartlar - 2 satır halinde
-        cards_row1 = QHBoxLayout()
-        cards_row2 = QHBoxLayout()
+        # Ana KPI kartları - 3 satır halinde
+        kpi_layout = QVBoxLayout()
+        kpi_layout.setSpacing(15)
         
-        # 1. Satır: Ana KPI'lar
-        self.kpi_total = QLabel("📊 Toplam Kayıt\n0")
-        self.kpi_total.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.kpi_total.setStyleSheet("""
-            QLabel {
-                padding: 16px;
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #e3f2fd, stop:1 #bbdefb);
-                color: #1565c0;
-                border: 2px solid #2196f3;
-                border-radius: 12px;
-                font-size: 14px;
-                font-weight: bold;
-                min-height: 60px;
-            }
-        """)
+        # 1. Satır: Ana metrikler
+        row1 = QHBoxLayout()
+        row1.setSpacing(15)
         
-        self.kpi_vehicles = QLabel("🚗 Toplam Araç\n0")
-        self.kpi_vehicles.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.kpi_vehicles.setStyleSheet("""
-            QLabel {
-                padding: 16px;
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #e8f5e8, stop:1 #c8e6c9);
-                color: #2e7d32;
-                border: 2px solid #4caf50;
-                border-radius: 12px;
-                font-size: 14px;
-                font-weight: bold;
-                min-height: 60px;
-            }
-        """)
+        self.kpi_total = self.create_kpi_card("📊", "Toplam Kayıt", "0", "#2196f3", "#e3f2fd")
+        self.kpi_vehicles = self.create_kpi_card("🚗", "Toplam Araç", "0", "#4caf50", "#e8f5e8")
+        self.kpi_last = self.create_kpi_card("⏰", "Son Bakım", "-", "#ff9800", "#fff3e0")
         
-        self.kpi_this_month = QLabel("📅 Bu Ay\n0")
-        self.kpi_this_month.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.kpi_this_month.setStyleSheet("""
-            QLabel {
-                padding: 16px;
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #fff3e0, stop:1 #ffcc02);
-                color: #f57c00;
-                border: 2px solid #ff9800;
-                border-radius: 12px;
-                font-size: 14px;
-                font-weight: bold;
-                min-height: 60px;
-            }
-        """)
+        row1.addWidget(self.kpi_total)
+        row1.addWidget(self.kpi_vehicles)
+        row1.addWidget(self.kpi_last)
         
-        self.kpi_last = QLabel("⏰ Son Bakım\n-")
-        self.kpi_last.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.kpi_last.setStyleSheet("""
-            QLabel {
-                padding: 16px;
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #fce4ec, stop:1 #f8bbd9);
-                color: #c2185b;
-                border: 2px solid #e91e63;
-                border-radius: 12px;
-                font-size: 14px;
-                font-weight: bold;
-                min-height: 60px;
-            }
-        """)
+        # 2. Satır: Zaman bazlı metrikler
+        row2 = QHBoxLayout()
+        row2.setSpacing(15)
         
-        cards_row1.addWidget(self.kpi_total)
-        cards_row1.addWidget(self.kpi_vehicles)
-        cards_row1.addWidget(self.kpi_this_month)
-        cards_row1.addWidget(self.kpi_last)
+        self.kpi_this_month = self.create_kpi_card("📅", "Bu Ay", "0", "#9c27b0", "#f3e5f5")
+        self.kpi_this_week = self.create_kpi_card("📋", "Bu Hafta", "0", "#ffc107", "#fff8e1")
+        self.kpi_upcoming = self.create_kpi_card("⚠️", "Yaklaşan Bakım", "0", "#f44336", "#ffebee")
         
-        # 2. Satır: Ek KPI'lar
-        self.kpi_avg_per_vehicle = QLabel("📈 Araç Başına Ortalama\n0")
-        self.kpi_avg_per_vehicle.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.kpi_avg_per_vehicle.setStyleSheet("""
-            QLabel {
-                padding: 16px;
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f3e5f5, stop:1 #e1bee7);
-                color: #7b1fa2;
-                border: 2px solid #9c27b0;
-                border-radius: 12px;
-                font-size: 14px;
-                font-weight: bold;
-                min-height: 60px;
-            }
-        """)
+        row2.addWidget(self.kpi_this_month)
+        row2.addWidget(self.kpi_this_week)
+        row2.addWidget(self.kpi_upcoming)
         
-        self.kpi_most_active = QLabel("🏆 En Aktif Bölge\n-")
-        self.kpi_most_active.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.kpi_most_active.setStyleSheet("""
-            QLabel {
-                padding: 16px;
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #e0f2f1, stop:1 #b2dfdb);
-                color: #00695c;
-                border: 2px solid #009688;
-                border-radius: 12px;
-                font-size: 14px;
-                font-weight: bold;
-                min-height: 60px;
-            }
-        """)
+        # 3. Satır: Analiz metrikleri
+        row3 = QHBoxLayout()
+        row3.setSpacing(15)
         
-        self.kpi_this_week = QLabel("📋 Bu Hafta\n0")
-        self.kpi_this_week.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.kpi_this_week.setStyleSheet("""
-            QLabel {
-                padding: 16px;
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #fff8e1, stop:1 #ffecb3);
-                color: #f9a825;
-                border: 2px solid #ffc107;
-                border-radius: 12px;
-                font-size: 14px;
-                font-weight: bold;
-                min-height: 60px;
-            }
-        """)
+        self.kpi_avg_per_vehicle = self.create_kpi_card("📈", "Araç Başına Ortalama", "0", "#009688", "#e0f2f1")
+        self.kpi_most_active = self.create_kpi_card("🏆", "En Aktif Bölge", "-", "#795548", "#efebe9")
         
-        self.kpi_upcoming = QLabel("⚠️ Yaklaşan Bakım\n0")
-        self.kpi_upcoming.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.kpi_upcoming.setStyleSheet("""
-            QLabel {
-                padding: 16px;
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ffebee, stop:1 #ffcdd2);
-                color: #d32f2f;
-                border: 2px solid #f44336;
-                border-radius: 12px;
-                font-size: 14px;
-                font-weight: bold;
-                min-height: 60px;
-            }
-        """)
+        row3.addWidget(self.kpi_avg_per_vehicle)
+        row3.addWidget(self.kpi_most_active)
+        row3.addStretch()  # Boş alan
         
-        cards_row2.addWidget(self.kpi_avg_per_vehicle)
-        cards_row2.addWidget(self.kpi_most_active)
-        cards_row2.addWidget(self.kpi_this_week)
-        cards_row2.addWidget(self.kpi_upcoming)
+        kpi_layout.addLayout(row1)
+        kpi_layout.addLayout(row2)
+        kpi_layout.addLayout(row3)
         
-        layout.addLayout(cards_row1)
-        layout.addLayout(cards_row2)
+        layout.addLayout(kpi_layout)
         
         # Analiz bölümü - 2 sütun halinde
         analysis_layout = QHBoxLayout()
@@ -1565,10 +1527,10 @@ class MainWindow(QMainWindow):
             self.stats_label.setText(stats_text)
         # Dashboard KPI'ları da güncelle
         if hasattr(self, 'kpi_total'):
-            # Ana KPI'lar
-            self.kpi_total.setText(f"📊 Toplam Kayıt\n{stats.get('toplam_kayit', 0)}")
-            self.kpi_vehicles.setText(f"🚗 Toplam Araç\n{stats.get('toplam_arac', 0)}")
-            self.kpi_last.setText(f"⏰ Son Bakım\n{stats.get('son_bakim') or '-'}")
+            # Ana KPI'lar - yeni format
+            self.update_kpi_card(self.kpi_total, "📊", "Toplam Kayıt", str(stats.get('toplam_kayit', 0)))
+            self.update_kpi_card(self.kpi_vehicles, "🚗", "Toplam Araç", str(stats.get('toplam_arac', 0)))
+            self.update_kpi_card(self.kpi_last, "⏰", "Son Bakım", stats.get('son_bakim') or '-')
             
             # Ek KPI'ları hesapla
             try:
@@ -1580,7 +1542,7 @@ class MainWindow(QMainWindow):
                     WHERE strftime('%Y-%m', tarih) = strftime('%Y-%m', 'now')
                 """)
                 this_month = cursor.fetchone()[0]
-                self.kpi_this_month.setText(f"📅 Bu Ay\n{this_month}")
+                self.update_kpi_card(self.kpi_this_month, "📅", "Bu Ay", str(this_month))
                 
                 # Bu hafta bakım sayısı
                 cursor.execute("""
@@ -1588,13 +1550,13 @@ class MainWindow(QMainWindow):
                     WHERE date(tarih) >= date('now', '-7 days')
                 """)
                 this_week = cursor.fetchone()[0]
-                self.kpi_this_week.setText(f"📋 Bu Hafta\n{this_week}")
+                self.update_kpi_card(self.kpi_this_week, "📋", "Bu Hafta", str(this_week))
                 
                 # Araç başına ortalama
                 total_records = stats.get('toplam_kayit', 0)
                 total_vehicles = stats.get('toplam_arac', 0)
                 avg_per_vehicle = round(total_records / total_vehicles, 1) if total_vehicles > 0 else 0
-                self.kpi_avg_per_vehicle.setText(f"📈 Araç Başına Ortalama\n{avg_per_vehicle}")
+                self.update_kpi_card(self.kpi_avg_per_vehicle, "📈", "Araç Başına Ortalama", str(avg_per_vehicle))
                 
                 # En aktif bölge
                 cursor.execute("""
@@ -1607,9 +1569,9 @@ class MainWindow(QMainWindow):
                 """)
                 most_active = cursor.fetchone()
                 if most_active:
-                    self.kpi_most_active.setText(f"🏆 En Aktif Bölge\n{most_active[0]}")
+                    self.update_kpi_card(self.kpi_most_active, "🏆", "En Aktif Bölge", most_active[0])
                 else:
-                    self.kpi_most_active.setText(f"🏆 En Aktif Bölge\n-")
+                    self.update_kpi_card(self.kpi_most_active, "🏆", "En Aktif Bölge", "-")
                 
                 # Yaklaşan bakım sayısı (sonraki KM - mevcut KM <= 1000)
                 cursor.execute("""
@@ -1619,7 +1581,7 @@ class MainWindow(QMainWindow):
                     AND (sonraki_bakim_km - bakim_km) <= 1000
                 """)
                 upcoming = cursor.fetchone()[0]
-                self.kpi_upcoming.setText(f"⚠️ Yaklaşan Bakım\n{upcoming}")
+                self.update_kpi_card(self.kpi_upcoming, "⚠️", "Yaklaşan Bakım", str(upcoming))
                 
                 # En çok bakım yapılan araçlar (top 5)
                 cursor.execute("""
