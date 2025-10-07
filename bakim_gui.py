@@ -729,7 +729,7 @@ class MainWindow(QMainWindow):
         title_container.addWidget(logo_label)
         
         # Başlık
-        title_label = QLabel("Öztaç İnşaat A.Ş\nAraç Bakım Kayıtları Yönetim Sistemi")
+        title_label = QLabel("Öztaç Petrol A.Ş\nAraç Bakım Kayıtları Yönetim Sistemi")
         title_label.setStyleSheet("""
             QLabel {
                 font-size: 18px;
@@ -808,16 +808,7 @@ class MainWindow(QMainWindow):
         top_add_btn.setStyleSheet(button_style)
         toolbar_layout.addWidget(top_add_btn)
         
-        # GitHub senkronizasyon butonları
-        github_sync_btn = QPushButton("☁️ Veritabanı Yedekle")
-        github_sync_btn.clicked.connect(self.sync_to_github)
-        github_sync_btn.setStyleSheet(button_style)
-        toolbar_layout.addWidget(github_sync_btn)
-        
-        github_download_btn = QPushButton("⬇️ Veritabanı İndir")
-        github_download_btn.clicked.connect(self.sync_from_github)
-        github_download_btn.setStyleSheet(button_style)
-        toolbar_layout.addWidget(github_download_btn)
+        # GitHub senkronizasyon butonları toolbar'dan kaldırıldı - menüye taşındı
         
         # Diğer işlemler açılır menüsü
         more_menu = QMenu(self)
@@ -829,9 +820,17 @@ class MainWindow(QMainWindow):
         act_export.triggered.connect(self.export_excel)
         act_wipe = QAction("🗑️ Tümünü Sil", self)
         act_wipe.triggered.connect(self.delete_all_records)
+        act_backup = QAction("☁️ Veritabanı Yedekle", self)
+        act_backup.triggered.connect(self.sync_to_github)
+        act_download = QAction("⬇️ Veritabanı İndir", self)
+        act_download.triggered.connect(self.sync_from_github)
+        
         more_menu.addAction(act_refresh)
         more_menu.addAction(act_import)
         more_menu.addAction(act_export)
+        more_menu.addSeparator()
+        more_menu.addAction(act_backup)
+        more_menu.addAction(act_download)
         more_menu.addSeparator()
         more_menu.addAction(act_wipe)
 
