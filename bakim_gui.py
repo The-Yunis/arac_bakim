@@ -740,7 +740,7 @@ class MainWindow(QMainWindow):
         toolbar_layout.addWidget(top_add_btn)
         
         # GitHub senkronizasyon butonları
-        github_sync_btn = QPushButton("☁️ GitHub'a Yükle")
+        github_sync_btn = QPushButton("☁️ Veritabanı Yedekle")
         github_sync_btn.clicked.connect(self.sync_to_github)
         github_sync_btn.setStyleSheet("""
             QPushButton {
@@ -758,7 +758,7 @@ class MainWindow(QMainWindow):
         """)
         toolbar_layout.addWidget(github_sync_btn)
         
-        github_download_btn = QPushButton("⬇️ GitHub'dan İndir")
+        github_download_btn = QPushButton("⬇️ Veritabanı İndir")
         github_download_btn.clicked.connect(self.sync_from_github)
         github_download_btn.setStyleSheet("""
             QPushButton {
@@ -786,13 +786,9 @@ class MainWindow(QMainWindow):
         act_export.triggered.connect(self.export_excel)
         act_wipe = QAction("🗑️ Tümünü Sil", self)
         act_wipe.triggered.connect(self.delete_all_records)
-        act_github_token = QAction("🔑 GitHub Token Ayarla", self)
-        act_github_token.triggered.connect(self.setup_github_token)
         more_menu.addAction(act_refresh)
         more_menu.addAction(act_import)
         more_menu.addAction(act_export)
-        more_menu.addSeparator()
-        more_menu.addAction(act_github_token)
         more_menu.addSeparator()
         more_menu.addAction(act_wipe)
 
@@ -1973,26 +1969,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "GitHub Senkronizasyon", f"❌ Hata: {str(e)}")
     
-    def setup_github_token(self):
-        """GitHub token ayarla"""
-        from PyQt6.QtWidgets import QInputDialog
-        
-        token, ok = QInputDialog.getText(
-            self, 
-            "GitHub Token", 
-            "GitHub Personal Access Token girin:\n\n"
-            "1. https://github.com/settings/tokens adresine gidin\n"
-            "2. 'Generate new token (classic)' tıklayın\n"
-            "3. 'repo' yetkisini seçin\n"
-            "4. Token'ı kopyalayıp buraya yapıştırın",
-            QLineEdit.EchoMode.Password
-        )
-        
-        if ok and token.strip():
-            if self.github_sync.save_token(token.strip()):
-                QMessageBox.information(self, "GitHub Token", "✅ Token başarıyla kaydedildi!")
-            else:
-                QMessageBox.warning(self, "GitHub Token", "❌ Token kaydedilemedi!")
+    # GitHub token ayarlama kaldırıldı - artık gerekli değil
     
     def closeEvent(self, event):
         """Pencere kapanırken otomatik senkronizasyon"""
