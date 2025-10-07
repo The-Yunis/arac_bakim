@@ -703,7 +703,6 @@ class MainWindow(QMainWindow):
                 border: 2px solid #e1f5fe;
                 border-radius: 16px;
                 margin: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             }
         """)
         
