@@ -713,49 +713,27 @@ class MainWindow(QMainWindow):
         # Logo ve başlık container
         title_container = QHBoxLayout()
         
-        # Öztaç İnşaat Logo SVG (PNG'den dönüştürülmüş)
+        # Basit Öztaç İnşaat Logo SVG
         logo_svg = """
-        <svg width="48" height="48" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Öztaç İnşaat Logo Tasarımı -->
-            <defs>
-                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
-                    <stop offset="50%" style="stop-color:#3b82f6;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#60a5fa;stop-opacity:1" />
-                </linearGradient>
-            </defs>
-            
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
             <!-- Ana daire -->
-            <circle cx="100" cy="100" r="90" fill="url(#logoGradient)" stroke="#1e40af" stroke-width="4"/>
+            <circle cx="24" cy="24" r="22" fill="#1e40af" stroke="#1e3a8a" stroke-width="2"/>
             
-            <!-- İnşaat temalı ikonlar -->
-            <!-- Bina silüeti -->
-            <rect x="60" y="80" width="20" height="40" fill="white" rx="2"/>
-            <rect x="85" y="70" width="20" height="50" fill="white" rx="2"/>
-            <rect x="110" y="85" width="20" height="35" fill="white" rx="2"/>
+            <!-- İnşaat temalı basit bina -->
+            <rect x="12" y="16" width="8" height="16" fill="white" rx="1"/>
+            <rect x="22" y="12" width="8" height="20" fill="white" rx="1"/>
+            <rect x="32" y="18" width="8" height="14" fill="white" rx="1"/>
             
-            <!-- Pencereler -->
-            <rect x="65" y="90" width="6" height="6" fill="#1e40af"/>
-            <rect x="75" y="90" width="6" height="6" fill="#1e40af"/>
-            <rect x="90" y="80" width="6" height="6" fill="#1e40af"/>
-            <rect x="100" y="80" width="6" height="6" fill="#1e40af"/>
-            <rect x="115" y="95" width="6" height="6" fill="#1e40af"/>
-            <rect x="125" y="95" width="6" height="6" fill="#1e40af"/>
+            <!-- Basit pencereler -->
+            <rect x="14" y="20" width="2" height="2" fill="#1e40af"/>
+            <rect x="18" y="20" width="2" height="2" fill="#1e40af"/>
+            <rect x="24" y="16" width="2" height="2" fill="#1e40af"/>
+            <rect x="28" y="16" width="2" height="2" fill="#1e40af"/>
+            <rect x="34" y="22" width="2" height="2" fill="#1e40af"/>
+            <rect x="38" y="22" width="2" height="2" fill="#1e40af"/>
             
-            <!-- Kapılar -->
-            <rect x="68" y="115" width="4" height="5" fill="#1e40af"/>
-            <rect x="95" y="105" width="4" height="15" fill="#1e40af"/>
-            <rect x="118" y="115" width="4" height="5" fill="#1e40af"/>
-            
-            <!-- Çatılar -->
-            <polygon points="50,80 70,60 90,80" fill="white"/>
-            <polygon points="75,70 95,50 115,70" fill="white"/>
-            <polygon points="100,85 120,65 140,85" fill="white"/>
-            
-            <!-- Merkez yazı alanı -->
-            <circle cx="100" cy="100" r="25" fill="white" opacity="0.9"/>
-            <text x="100" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#1e40af">ÖZTAÇ</text>
-            <text x="100" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" fill="#1e40af">İNŞAAT</text>
+            <!-- Merkez yazı -->
+            <text x="24" y="26" text-anchor="middle" font-family="Arial" font-size="6" font-weight="bold" fill="white">ÖZTAÇ</text>
         </svg>
         """
         
@@ -769,18 +747,28 @@ class MainWindow(QMainWindow):
         """)
         
         # SVG'yi QPixmap'e dönüştür
-        from PyQt6.QtSvg import QSvgRenderer
-        from PyQt6.QtGui import QPainter
-        from PyQt6.QtCore import QByteArray
-        
-        svg_data = QByteArray(logo_svg.encode('utf-8'))
-        renderer = QSvgRenderer(svg_data)
-        pixmap = QPixmap(48, 48)
-        pixmap.fill(Qt.GlobalColor.transparent)
-        painter = QPainter(pixmap)
-        renderer.render(painter)
-        painter.end()
-        logo_label.setPixmap(pixmap)
+        try:
+            from PyQt6.QtSvg import QSvgRenderer
+            from PyQt6.QtGui import QPainter
+            from PyQt6.QtCore import QByteArray
+            
+            svg_data = QByteArray(logo_svg.encode('utf-8'))
+            renderer = QSvgRenderer(svg_data)
+            if renderer.isValid():
+                pixmap = QPixmap(48, 48)
+                pixmap.fill(Qt.GlobalColor.transparent)
+                painter = QPainter(pixmap)
+                renderer.render(painter)
+                painter.end()
+                logo_label.setPixmap(pixmap)
+            else:
+                # SVG render hatası durumunda basit text logo
+                logo_label.setText("🏗️")
+                logo_label.setStyleSheet("font-size: 32px; color: #1e40af;")
+        except Exception as e:
+            # Hata durumunda emoji logo
+            logo_label.setText("🏗️")
+            logo_label.setStyleSheet("font-size: 32px; color: #1e40af;")
         
         title_container.addWidget(logo_label)
         
