@@ -1984,7 +1984,7 @@ class MainWindow(QMainWindow):
             "2. 'Generate new token (classic)' tıklayın\n"
             "3. 'repo' yetkisini seçin\n"
             "4. Token'ı kopyalayıp buraya yapıştırın",
-            QLineEdit.Password
+            QLineEdit.EchoMode.Password
         )
         
         if ok and token.strip():
