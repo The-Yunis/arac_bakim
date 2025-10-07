@@ -1179,20 +1179,8 @@ class MainWindow(QMainWindow):
         row2.addWidget(self.kpi_this_week)
         row2.addWidget(self.kpi_upcoming)
         
-        # 3. Satır: Analiz metrikleri
-        row3 = QHBoxLayout()
-        row3.setSpacing(10)
-        
-        self.kpi_avg_per_vehicle = self.create_kpi_card("📈", "Araç Başına Ortalama", "0", "#009688", "#e0f2f1")
-        self.kpi_most_active = self.create_kpi_card("🏆", "En Aktif Bölge", "-", "#795548", "#efebe9")
-        
-        row3.addWidget(self.kpi_avg_per_vehicle)
-        row3.addWidget(self.kpi_most_active)
-        row3.addStretch()  # Boş alan
-        
         kpi_layout.addLayout(row1)
         kpi_layout.addLayout(row2)
-        kpi_layout.addLayout(row3)
         
         layout.addLayout(kpi_layout)
         
@@ -1552,26 +1540,6 @@ class MainWindow(QMainWindow):
                 this_week = cursor.fetchone()[0]
                 self.update_kpi_card(self.kpi_this_week, "📋", "Bu Hafta", str(this_week))
                 
-                # Araç başına ortalama
-                total_records = stats.get('toplam_kayit', 0)
-                total_vehicles = stats.get('toplam_arac', 0)
-                avg_per_vehicle = round(total_records / total_vehicles, 1) if total_vehicles > 0 else 0
-                self.update_kpi_card(self.kpi_avg_per_vehicle, "📈", "Araç Başına Ortalama", str(avg_per_vehicle))
-                
-                # En aktif bölge
-                cursor.execute("""
-                    SELECT bolge, COUNT(*) as count 
-                    FROM bakimlar 
-                    WHERE bolge IS NOT NULL AND bolge != ''
-                    GROUP BY bolge 
-                    ORDER BY count DESC 
-                    LIMIT 1
-                """)
-                most_active = cursor.fetchone()
-                if most_active:
-                    self.update_kpi_card(self.kpi_most_active, "🏆", "En Aktif Bölge", most_active[0])
-                else:
-                    self.update_kpi_card(self.kpi_most_active, "🏆", "En Aktif Bölge", "-")
                 
                 # Yaklaşan bakım sayısı (sonraki KM - mevcut KM <= 1000)
                 cursor.execute("""
