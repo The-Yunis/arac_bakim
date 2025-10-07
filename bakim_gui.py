@@ -1104,18 +1104,18 @@ class MainWindow(QMainWindow):
         dlg.exec()
 
     def create_kpi_card(self, icon, title, value, color, bg_color):
-        """Modern KPI kartı oluştur"""
+        """Modern KPI kartı oluştur - optimize edilmiş boyutlar"""
         card = QLabel()
         card.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        card.setFixedHeight(100)
-        card.setMinimumWidth(200)
+        card.setFixedHeight(90)
+        card.setMinimumWidth(180)
         
-        # İçerik formatı
+        # İçerik formatı - daha küçük ve dengeli
         content = f"""
-        <div style="text-align: center; padding: 20px;">
-            <div style="font-size: 32px; margin-bottom: 8px;">{icon}</div>
-            <div style="font-size: 16px; font-weight: bold; color: {color}; margin-bottom: 4px;">{title}</div>
-            <div style="font-size: 24px; font-weight: bold; color: {color};">{value}</div>
+        <div style="text-align: center; padding: 15px;">
+            <div style="font-size: 24px; margin-bottom: 6px;">{icon}</div>
+            <div style="font-size: 12px; font-weight: bold; color: {color}; margin-bottom: 3px;">{title}</div>
+            <div style="font-size: 18px; font-weight: bold; color: {color};">{value}</div>
         </div>
         """
         card.setText(content)
@@ -1125,7 +1125,7 @@ class MainWindow(QMainWindow):
             QLabel {{
                 background-color: {bg_color};
                 border: 2px solid {color};
-                border-radius: 12px;
+                border-radius: 10px;
                 color: {color};
                 font-weight: bold;
             }}
@@ -1134,30 +1134,30 @@ class MainWindow(QMainWindow):
         return card
 
     def update_kpi_card(self, card, icon, title, value):
-        """KPI kartını güncelle"""
+        """KPI kartını güncelle - optimize edilmiş boyutlar"""
         content = f"""
-        <div style="text-align: center; padding: 20px;">
-            <div style="font-size: 32px; margin-bottom: 8px;">{icon}</div>
-            <div style="font-size: 16px; font-weight: bold; color: #333; margin-bottom: 4px;">{title}</div>
-            <div style="font-size: 24px; font-weight: bold; color: #333;">{value}</div>
+        <div style="text-align: center; padding: 15px;">
+            <div style="font-size: 24px; margin-bottom: 6px;">{icon}</div>
+            <div style="font-size: 12px; font-weight: bold; color: #333; margin-bottom: 3px;">{title}</div>
+            <div style="font-size: 18px; font-weight: bold; color: #333;">{value}</div>
         </div>
         """
         card.setText(content)
 
     def create_dashboard_panel(self):
-        """Dashboard paneli - Modern tasarım"""
+        """Dashboard paneli - Kompakt ve dengeli tasarım"""
         panel = QWidget()
         layout = QVBoxLayout()
-        layout.setSpacing(20)
-        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(15)
+        layout.setContentsMargins(15, 15, 15, 15)
         
         # Ana KPI kartları - 3 satır halinde
         kpi_layout = QVBoxLayout()
-        kpi_layout.setSpacing(15)
+        kpi_layout.setSpacing(10)
         
         # 1. Satır: Ana metrikler
         row1 = QHBoxLayout()
-        row1.setSpacing(15)
+        row1.setSpacing(10)
         
         self.kpi_total = self.create_kpi_card("📊", "Toplam Kayıt", "0", "#2196f3", "#e3f2fd")
         self.kpi_vehicles = self.create_kpi_card("🚗", "Toplam Araç", "0", "#4caf50", "#e8f5e8")
@@ -1169,7 +1169,7 @@ class MainWindow(QMainWindow):
         
         # 2. Satır: Zaman bazlı metrikler
         row2 = QHBoxLayout()
-        row2.setSpacing(15)
+        row2.setSpacing(10)
         
         self.kpi_this_month = self.create_kpi_card("📅", "Bu Ay", "0", "#9c27b0", "#f3e5f5")
         self.kpi_this_week = self.create_kpi_card("📋", "Bu Hafta", "0", "#ffc107", "#fff8e1")
@@ -1181,7 +1181,7 @@ class MainWindow(QMainWindow):
         
         # 3. Satır: Analiz metrikleri
         row3 = QHBoxLayout()
-        row3.setSpacing(15)
+        row3.setSpacing(10)
         
         self.kpi_avg_per_vehicle = self.create_kpi_card("📈", "Araç Başına Ortalama", "0", "#009688", "#e0f2f1")
         self.kpi_most_active = self.create_kpi_card("🏆", "En Aktif Bölge", "-", "#795548", "#efebe9")
