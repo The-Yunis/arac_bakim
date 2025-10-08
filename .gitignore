@@ -19,7 +19,6 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
 # PyInstaller
 *.manifest
@@ -66,15 +65,7 @@ venv.bak/
 ehthumbs.db
 Thumbs.db
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Logs
-*.log
-
-# Temporary files
-*.tmp
-*.temp
-bak_gui_dummy
+# Application specific
+temp_update/
+*.backup
+github_token.txt

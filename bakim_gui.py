@@ -9,7 +9,8 @@ import sys
 import sqlite3
 import pandas as pd
 import os
-import requests  # GitHub API için
+# GitHub entegrasyonu kaldırıldı - bağımsız çalışma için
+import requests  # Güncelleme sistemi için
 import json      # JSON işlemleri için
 import shutil    # Dosya kopyalama için
 import subprocess # Sistem komutları için
@@ -580,10 +581,11 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.db_manager = DatabaseManager()
-        self.github_sync = GitHubSync()  # GitHub senkronizasyon
+        self.update_manager = UpdateManager()  # Güncelleme yöneticisi
         self.setup_ui()
         self.load_data()
-        self.auto_sync_on_startup()  # Açılışta otomatik senkronizasyon
+        # Açılışta güncelleme kontrolü (arka planda)
+        self.check_updates_on_startup()
     
     def setup_ui(self):
         """Ana pencere arayüzünü ayarla"""
@@ -840,7 +842,7 @@ class MainWindow(QMainWindow):
         top_add_btn.setStyleSheet(button_style)
         toolbar_layout.addWidget(top_add_btn)
         
-        # GitHub senkronizasyon butonları toolbar'dan kaldırıldı - menüye taşındı
+        # GitHub entegrasyonu kaldırıldı
         
         # Diğer işlemler açılır menüsü
         more_menu = QMenu(self)
@@ -852,17 +854,15 @@ class MainWindow(QMainWindow):
         act_export.triggered.connect(self.export_excel)
         act_wipe = QAction("🗑️ Tümünü Sil", self)
         act_wipe.triggered.connect(self.delete_all_records)
-        act_backup = QAction("☁️ Veritabanı Yedekle", self)
-        act_backup.triggered.connect(self.sync_to_github)
-        act_download = QAction("⬇️ Veritabanı İndir", self)
-        act_download.triggered.connect(self.sync_from_github)
+        # Güncelleme kontrolü
+        act_update = QAction("🔄 Güncelleme Kontrolü", self)
+        act_update.triggered.connect(self.manual_check_updates)
         
         more_menu.addAction(act_refresh)
         more_menu.addAction(act_import)
         more_menu.addAction(act_export)
         more_menu.addSeparator()
-        more_menu.addAction(act_backup)
-        more_menu.addAction(act_download)
+        more_menu.addAction(act_update)
         more_menu.addSeparator()
         more_menu.addAction(act_wipe)
 
@@ -1145,23 +1145,24 @@ class MainWindow(QMainWindow):
         card.setText(content)
 
     def create_dashboard_panel(self):
-        """Dashboard paneli - Kompakt ve dengeli tasarım"""
+        """Dashboard paneli - Temiz ve minimalist tasarım"""
         panel = QWidget()
         layout = QVBoxLayout()
-        layout.setSpacing(15)
-        layout.setContentsMargins(15, 15, 15, 15)
+        layout.setSpacing(20)  # Daha fazla boşluk
+        layout.setContentsMargins(20, 20, 20, 20)  # Daha fazla margin
         
-        # Ana KPI kartları - 3 satır halinde
+        # Ana KPI kartları - 2 satır halinde
         kpi_layout = QVBoxLayout()
-        kpi_layout.setSpacing(10)
+        kpi_layout.setSpacing(15)  # Kartlar arası boşluk artırıldı
         
         # 1. Satır: Ana metrikler
         row1 = QHBoxLayout()
-        row1.setSpacing(10)
+        row1.setSpacing(15)
         
-        self.kpi_total = self.create_kpi_card("📊", "Toplam Kayıt", "0", "#2196f3", "#e3f2fd")
-        self.kpi_vehicles = self.create_kpi_card("🚗", "Toplam Araç", "0", "#4caf50", "#e8f5e8")
-        self.kpi_last = self.create_kpi_card("⏰", "Son Bakım", "-", "#ff9800", "#fff3e0")
+        # Sade ve minimalist renk paleti
+        self.kpi_total = self.create_kpi_card("📊", "Toplam Kayıt", "0", "#2c3e50", "#ecf0f1")
+        self.kpi_vehicles = self.create_kpi_card("🚗", "Toplam Araç", "0", "#34495e", "#ecf0f1")
+        self.kpi_last = self.create_kpi_card("⏰", "Son Bakım", "-", "#7f8c8d", "#ecf0f1")
         
         row1.addWidget(self.kpi_total)
         row1.addWidget(self.kpi_vehicles)
@@ -1169,11 +1170,11 @@ class MainWindow(QMainWindow):
         
         # 2. Satır: Zaman bazlı metrikler
         row2 = QHBoxLayout()
-        row2.setSpacing(10)
+        row2.setSpacing(15)
         
-        self.kpi_this_month = self.create_kpi_card("📅", "Bu Ay", "0", "#9c27b0", "#f3e5f5")
-        self.kpi_this_week = self.create_kpi_card("📋", "Bu Hafta", "0", "#ffc107", "#fff8e1")
-        self.kpi_upcoming = self.create_kpi_card("⚠️", "Yaklaşan Bakım", "0", "#f44336", "#ffebee")
+        self.kpi_this_month = self.create_kpi_card("📅", "Bu Ay", "0", "#95a5a6", "#ecf0f1")
+        self.kpi_this_week = self.create_kpi_card("📋", "Bu Hafta", "0", "#bdc3c7", "#ecf0f1")
+        self.kpi_upcoming = self.create_kpi_card("⚠️", "Yaklaşan Bakım", "0", "#e74c3c", "#fdf2f2")
         
         row2.addWidget(self.kpi_this_month)
         row2.addWidget(self.kpi_this_week)
@@ -1184,25 +1185,34 @@ class MainWindow(QMainWindow):
         
         layout.addLayout(kpi_layout)
         
-        # Analiz bölümü - 2 sütun halinde
+        # KPI kartları ile tablolar arasında daha fazla boşluk
+        spacer = QWidget()
+        spacer.setFixedHeight(25)  # Ekstra boşluk
+        layout.addWidget(spacer)
+        
+        # Analiz bölümü - 3 sütun halinde (yan yana)
         analysis_layout = QHBoxLayout()
+        analysis_layout.setSpacing(15)  # Panel arası boşluk
         
         # Sol: En çok bakım yapılan araçlar
         vehicles_group = QGroupBox("🏆 En Çok Bakım Yapılan Araçlar")
         vehicles_group.setStyleSheet("""
             QGroupBox {
-                color: #1a2b49;
-                border: 2px solid #2196f3;
+                color: #2c3e50;
+                border: 1px solid #bdc3c7;
                 border-radius: 8px;
                 background: #ffffff;
                 font-weight: bold;
                 font-size: 14px;
+                margin-top: 15px;
+                padding-top: 15px;
             }
             QGroupBox::title {
                 subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px 0 5px;
+                left: 15px;
+                padding: 5px 10px;
                 background: #ffffff;
+                border-radius: 4px;
             }
         """)
         vehicles_layout = QVBoxLayout()
@@ -1236,18 +1246,21 @@ class MainWindow(QMainWindow):
         regions_group = QGroupBox("🗺️ Bölge Analizi")
         regions_group.setStyleSheet("""
             QGroupBox {
-                color: #1a2b49;
-                border: 2px solid #4caf50;
+                color: #2c3e50;
+                border: 1px solid #bdc3c7;
                 border-radius: 8px;
                 background: #ffffff;
                 font-weight: bold;
                 font-size: 14px;
+                margin-top: 15px;
+                padding-top: 15px;
             }
             QGroupBox::title {
                 subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px 0 5px;
+                left: 15px;
+                padding: 5px 10px;
                 background: #ffffff;
+                border-radius: 4px;
             }
         """)
         regions_layout = QVBoxLayout()
@@ -1276,24 +1289,25 @@ class MainWindow(QMainWindow):
         regions_group.setLayout(regions_layout)
         analysis_layout.addWidget(regions_group)
         
-        layout.addLayout(analysis_layout)
-        
-        # Alt: Bakımı yapan kişilere dair mini tablo
+        # Sağ: Bakımı yapan kişilere dair mini tablo
         person_group = QGroupBox("👥 Bakım Yapan Personel")
         person_group.setStyleSheet("""
             QGroupBox {
-                color: #1a2b49;
-                border: 2px solid #ff9800;
+                color: #2c3e50;
+                border: 1px solid #bdc3c7;
                 border-radius: 8px;
                 background: #ffffff;
                 font-weight: bold;
                 font-size: 14px;
+                margin-top: 15px;
+                padding-top: 15px;
             }
             QGroupBox::title {
                 subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px 0 5px;
+                left: 15px;
+                padding: 5px 10px;
                 background: #ffffff;
+                border-radius: 4px;
             }
         """)
         person_layout = QVBoxLayout()
@@ -1320,7 +1334,9 @@ class MainWindow(QMainWindow):
         """)
         person_layout.addWidget(self.person_table)
         person_group.setLayout(person_layout)
-        layout.addWidget(person_group)
+        analysis_layout.addWidget(person_group)
+        
+        layout.addLayout(analysis_layout)
         
         panel.setLayout(layout)
         return panel
@@ -1914,192 +1930,272 @@ class MainWindow(QMainWindow):
             QHeaderView::section { background: #eef3ff; color: #1a2b49; border: 1px solid #cfd8e3; }
         """)
     
-    # ---------------------- GitHub Senkronizasyon Metodları ----------------------
-    def auto_sync_on_startup(self):
-        """Açılışta otomatik senkronizasyon"""
+    def check_updates_on_startup(self):
+        """Açılışta güncelleme kontrolü"""
         try:
-            # GitHub'dan veritabanını indir
-            success, message = self.github_sync.download_database()
-            if success:
-                # Veritabanı güncellendi, tabloyu yenile
-                self.load_data()
-                print(f"✅ {message}")
-            else:
-                print(f"⚠️ GitHub senkronizasyon: {message}")
+            # Arka planda güncelleme kontrolü
+            import threading
+            thread = threading.Thread(target=self._check_updates_background)
+            thread.daemon = True
+            thread.start()
         except Exception as e:
-            print(f"❌ GitHub senkronizasyon hatası: {e}")
+            print(f"Güncelleme kontrolü başlatılamadı: {e}")
     
-    def sync_to_github(self):
-        """Veritabanını GitHub'a yükle"""
+    def _check_updates_background(self):
+        """Arka planda güncelleme kontrolü"""
         try:
-            success, message = self.github_sync.upload_database()
-            if success:
-                QMessageBox.information(self, "GitHub Senkronizasyon", f"✅ {message}")
-            else:
-                QMessageBox.warning(self, "GitHub Senkronizasyon", f"❌ {message}")
+            has_update, version, description, url = self.update_manager.check_for_updates()
+            if has_update:
+                # UI thread'de dialog göster
+                QTimer.singleShot(1000, lambda: self.show_update_dialog(version, description, url))
         except Exception as e:
-            QMessageBox.critical(self, "GitHub Senkronizasyon", f"❌ Hata: {str(e)}")
+            print(f"Güncelleme kontrolü hatası: {e}")
     
-    def sync_from_github(self):
-        """GitHub'dan veritabanını indir"""
+    def show_update_dialog(self, version, description, url):
+        """Güncelleme dialog'unu göster"""
         try:
-            success, message = self.github_sync.download_database()
-            if success:
-                # Veritabanı güncellendi, tabloyu yenile
-                self.load_data()
-                QMessageBox.information(self, "GitHub Senkronizasyon", f"✅ {message}")
-            else:
-                QMessageBox.warning(self, "GitHub Senkronizasyon", f"❌ {message}")
+            dialog = UpdateDialog(self, (version, description, url))
+            if dialog.exec() == QDialog.DialogCode.Accepted:
+                self.perform_update(url)
         except Exception as e:
-            QMessageBox.critical(self, "GitHub Senkronizasyon", f"❌ Hata: {str(e)}")
+            print(f"Güncelleme dialog hatası: {e}")
     
-    # GitHub token ayarlama kaldırıldı - artık gerekli değil
+    def perform_update(self, download_url):
+        """Güncellemeyi gerçekleştir"""
+        try:
+            # İndirme progress dialog'u
+            progress = QMessageBox(self)
+            progress.setWindowTitle("Güncelleme")
+            progress.setText("Güncelleme indiriliyor...")
+            progress.setStandardButtons(QMessageBox.StandardButton.NoButton)
+            progress.show()
+            QApplication.processEvents()
+            
+            # Güncellemeyi indir
+            success, exe_path = self.update_manager.download_update(download_url)
+            
+            if success:
+                progress.setText("Güncelleme kuruluyor...")
+                QApplication.processEvents()
+                
+                # Güncellemeyi kur
+                if self.update_manager.install_update(exe_path):
+                    progress.close()
+                    QMessageBox.information(
+                        self, "Güncelleme Tamamlandı", 
+                        "Güncelleme başarıyla tamamlandı!\nProgram yeniden başlatılacak."
+                    )
+                    # Programı yeniden başlat
+                    QApplication.quit()
+                else:
+                    progress.close()
+                    QMessageBox.warning(self, "Güncelleme Hatası", "Güncelleme kurulamadı!")
+            else:
+                progress.close()
+                QMessageBox.warning(self, "İndirme Hatası", "Güncelleme indirilemedi!")
+                
+        except Exception as e:
+            print(f"Güncelleme hatası: {e}")
+            QMessageBox.critical(self, "Hata", f"Güncelleme sırasında hata: {str(e)}")
     
+    def manual_check_updates(self):
+        """Manuel güncelleme kontrolü"""
+        try:
+            has_update, version, description, url = self.update_manager.check_for_updates()
+            if has_update:
+                self.show_update_dialog(version, description, url)
+            else:
+                QMessageBox.information(self, "Güncelleme", "Güncel sürümü kullanıyorsunuz!")
+        except Exception as e:
+            QMessageBox.critical(self, "Hata", f"Güncelleme kontrolü hatası: {str(e)}")
+
     def closeEvent(self, event):
-        """Pencere kapanırken otomatik senkronizasyon"""
-        try:
-            # Kapanışta veritabanını GitHub'a yükle
-            success, message = self.github_sync.upload_database()
-            if success:
-                print(f"✅ Kapanış senkronizasyonu: {message}")
-            else:
-                print(f"⚠️ Kapanış senkronizasyonu: {message}")
-        except Exception as e:
-            print(f"❌ Kapanış senkronizasyonu hatası: {e}")
-        
+        """Pencere kapanırken temizlik"""
         # Normal kapanış işlemi
         event.accept()
 
-# ---------------------- GitHub Veritabanı Senkronizasyonu ----------------------
-class GitHubSync:
-    """GitHub ile veritabanı senkronizasyon sınıfı"""
+# ---------------------- Otomatik Güncelleme Sistemi ----------------------
+class UpdateManager:
+    """Otomatik güncelleme yönetim sınıfı"""
     
-    def __init__(self, repo_owner="The-Yunis", repo_name="arac_bakim", db_filename="bakim_kayitlari.db"):
-        self.repo_owner = repo_owner
-        self.repo_name = repo_name
-        self.db_filename = db_filename
-        self.github_token = None
-        self.load_token()
-    
-    def load_token(self):
-        """GitHub token'ını yükle (güvenlik için ayrı dosyadan)"""
+    def __init__(self):
+        # Sürüm bilgisini version.py'den al
         try:
-            # Token dosyası varsa oku
-            if os.path.exists("github_token.txt"):
-                with open("github_token.txt", "r") as f:
-                    self.github_token = f.read().strip()
-            else:
-                # İlk kullanımda token iste
-                self.github_token = None
-        except Exception:
-            self.github_token = None
-    
-    def save_token(self, token):
-        """GitHub token'ını kaydet"""
-        try:
-            with open("github_token.txt", "w") as f:
-                f.write(token)
-            self.github_token = token
-            return True
-        except Exception:
-            return False
-    
-    def upload_database(self):
-        """Veritabanını GitHub'a yükle"""
-        if not self.github_token:
-            return False, "GitHub token bulunamadı. Lütfen ayarlardan token girin."
+            from version import VERSION
+            self.current_version = VERSION
+        except ImportError:
+            self.current_version = "1.0.0"
         
-        try:
-            # Veritabanı dosyasını oku
-            if not os.path.exists(self.db_filename):
-                return False, "Veritabanı dosyası bulunamadı."
-            
-            with open(self.db_filename, "rb") as f:
-                db_content = f.read()
-            
-            # Base64 encode
-            db_encoded = base64.b64encode(db_content).decode('utf-8')
-            
-            # GitHub API ile dosyayı yükle
-            url = f"https://api.github.com/repos/{self.repo_owner}/{self.repo_name}/contents/{self.db_filename}"
-            
-            headers = {
-                "Authorization": f"token {self.github_token}",
-                "Accept": "application/vnd.github.v3+json"
-            }
-            
-            # Önce dosyanın mevcut olup olmadığını kontrol et
-            response = requests.get(url, headers=headers)
-            sha = None
-            if response.status_code == 200:
-                sha = response.json().get("sha")
-            
-            data = {
-                "message": f"Veritabanı güncellendi - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
-                "content": db_encoded,
-                "branch": "main"
-            }
-            
-            if sha:
-                data["sha"] = sha
-            
-            response = requests.put(url, headers=headers, json=data)
-            
-            if response.status_code in [200, 201]:
-                return True, "Veritabanı başarıyla GitHub'a yüklendi."
-            else:
-                return False, f"GitHub yükleme hatası: {response.status_code} - {response.text}"
-                
-        except Exception as e:
-            return False, f"Yükleme hatası: {str(e)}"
-    
-    def download_database(self):
-        """Veritabanını GitHub'dan indir"""
-        if not self.github_token:
-            return False, "GitHub token bulunamadı. Lütfen ayarlardan token girin."
+        self.github_repo = "The-Yunis/arac_bakim"  # GitHub repository
+        self.update_url = f"https://api.github.com/repos/{self.github_repo}/releases/latest"
+        self.download_url = f"https://github.com/{self.github_repo}/releases/latest"
         
+    def check_for_updates(self):
+        """Güncelleme kontrolü yap"""
         try:
-            # GitHub API ile dosyayı indir
-            url = f"https://api.github.com/repos/{self.repo_owner}/{self.repo_name}/contents/{self.db_filename}"
-            
-            headers = {
-                "Authorization": f"token {self.github_token}",
-                "Accept": "application/vnd.github.v3+json"
-            }
-            
-            response = requests.get(url, headers=headers)
-            
+            response = requests.get(self.update_url, timeout=10)
             if response.status_code == 200:
                 data = response.json()
-                db_content = base64.b64decode(data["content"])
+                latest_version = data['tag_name'].replace('v', '')
                 
-                # Yerel veritabanını yedekle
-                if os.path.exists(self.db_filename):
-                    shutil.copy(self.db_filename, f"{self.db_filename}.backup")
-                
-                # Yeni veritabanını kaydet
-                with open(self.db_filename, "wb") as f:
-                    f.write(db_content)
-                
-                return True, "Veritabanı başarıyla GitHub'dan indirildi."
-            else:
-                return False, f"GitHub indirme hatası: {response.status_code} - {response.text}"
-                
+                if self.is_newer_version(latest_version, self.current_version):
+                    return True, latest_version, data['body'], data['html_url']
+                return False, None, None, None
+            return False, None, None, None
         except Exception as e:
-            return False, f"İndirme hatası: {str(e)}"
+            print(f"Güncelleme kontrolü hatası: {e}")
+            return False, None, None, None
     
-    def check_connection(self):
-        """GitHub bağlantısını test et"""
-        if not self.github_token:
-            return False, "GitHub token bulunamadı."
-        
+    def is_newer_version(self, latest, current):
+        """Sürüm karşılaştırması"""
         try:
-            url = f"https://api.github.com/repos/{self.repo_owner}/{self.repo_name}"
-            headers = {"Authorization": f"token {self.github_token}"}
-            response = requests.get(url, headers=headers)
-            return response.status_code == 200, f"Bağlantı durumu: {response.status_code}"
+            latest_parts = [int(x) for x in latest.split('.')]
+            current_parts = [int(x) for x in current.split('.')]
+            
+            for i in range(max(len(latest_parts), len(current_parts))):
+                latest_part = latest_parts[i] if i < len(latest_parts) else 0
+                current_part = current_parts[i] if i < len(current_parts) else 0
+                
+                if latest_part > current_part:
+                    return True
+                elif latest_part < current_part:
+                    return False
+            return False
+        except:
+            return False
+    
+    def download_update(self, download_url):
+        """Güncellemeyi indir"""
+        try:
+            # GitHub'dan son release'i indir
+            response = requests.get(download_url, timeout=30)
+            if response.status_code == 200:
+                # İndirilen dosyayı geçici klasöre kaydet
+                temp_dir = "temp_update"
+                if not os.path.exists(temp_dir):
+                    os.makedirs(temp_dir)
+                
+                # EXE dosyasını indir (varsayılan olarak)
+                exe_url = f"https://github.com/{self.github_repo}/releases/latest/download/AracBakimYonetim.exe"
+                exe_response = requests.get(exe_url, timeout=60)
+                
+                if exe_response.status_code == 200:
+                    exe_path = os.path.join(temp_dir, "AracBakimYonetim.exe")
+                    with open(exe_path, 'wb') as f:
+                        f.write(exe_response.content)
+                    return True, exe_path
+                return False, None
+            return False, None
         except Exception as e:
-            return False, f"Bağlantı hatası: {str(e)}"
+            print(f"İndirme hatası: {e}")
+            return False, None
+    
+    def install_update(self, exe_path):
+        """Güncellemeyi kur"""
+        try:
+            # Mevcut veritabanını yedekle
+            if os.path.exists("bakim_kayitlari.db"):
+                shutil.copy("bakim_kayitlari.db", "bakim_kayitlari.db.backup")
+            
+            # Yeni EXE'yi mevcut konuma kopyala
+            current_exe = sys.executable
+            if current_exe.endswith('.exe'):
+                shutil.copy(exe_path, current_exe)
+                return True
+            return False
+        except Exception as e:
+            print(f"Kurulum hatası: {e}")
+            return False
+
+class UpdateDialog(QDialog):
+    """Güncelleme dialog'u"""
+    
+    def __init__(self, parent=None, update_info=None):
+        super().__init__(parent)
+        self.update_info = update_info
+        self.setup_ui()
+    
+    def setup_ui(self):
+        """Dialog arayüzünü ayarla"""
+        self.setWindowTitle("Güncelleme Mevcut")
+        self.setModal(True)
+        self.resize(500, 300)
+        
+        layout = QVBoxLayout()
+        
+        # Başlık
+        title = QLabel("🔄 Yeni Sürüm Mevcut!")
+        title.setStyleSheet("""
+            QLabel {
+                font-size: 18px;
+                font-weight: bold;
+                color: #2c3e50;
+                padding: 10px;
+            }
+        """)
+        layout.addWidget(title)
+        
+        # Güncelleme bilgileri
+        if self.update_info:
+            version, description, url = self.update_info
+            info_text = f"""
+            <b>Yeni Sürüm:</b> {version}<br>
+            <b>Açıklama:</b><br>
+            {description}<br><br>
+            <b>GitHub:</b> <a href="{url}">{url}</a>
+            """
+            info_label = QLabel(info_text)
+            info_label.setWordWrap(True)
+            info_label.setStyleSheet("""
+                QLabel {
+                    padding: 10px;
+                    background-color: #f8f9fa;
+                    border-radius: 6px;
+                    color: #2c3e50;
+                }
+            """)
+            layout.addWidget(info_label)
+        
+        # Butonlar
+        button_layout = QHBoxLayout()
+        
+        update_btn = QPushButton("🔄 Güncelle")
+        update_btn.clicked.connect(self.accept)
+        update_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #27ae60;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 6px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #229954;
+            }
+        """)
+        
+        later_btn = QPushButton("⏰ Daha Sonra")
+        later_btn.clicked.connect(self.reject)
+        later_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #95a5a6;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 6px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #7f8c8d;
+            }
+        """)
+        
+        button_layout.addWidget(update_btn)
+        button_layout.addWidget(later_btn)
+        layout.addLayout(button_layout)
+        
+        self.setLayout(layout)
 
 def main():
     """Ana fonksiyon"""
