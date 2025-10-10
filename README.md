@@ -26,7 +26,6 @@ Modern PyQt6 tabanlı şantiye ve araç bakım yönetim uygulaması. Şantiyeler
 - **Modern Dashboard**: KPI kartları ve analiz grafikleri
 - **Şantiye Bazlı İstatistikler**: Her şantiye için ayrı analiz
 - **Excel İçe/Dışa Aktarma**: Verilerinizi Excel formatında yedekleme
-- **GitHub Senkronizasyonu**: Veritabanını GitHub'da otomatik yedekleme
 
 ### 💻 Teknik Özellikler
 - **Modern Arayüz**: Kullanıcı dostu PyQt6 arayüzü
@@ -38,7 +37,7 @@ Modern PyQt6 tabanlı şantiye ve araç bakım yönetim uygulaması. Şantiyeler
 ### 📦 EXE Dosyası ile (Önerilen)
 1. **İndirin**: `dist/AracBakimYonetim.app` dosyasını indirin
 2. **Çalıştırın**: Dosyaya çift tıklayın
-3. **Kullanın**: Program otomatik olarak GitHub'dan veri indirecek
+3. **Kullanın**: Program yerel veritabanı ile çalışır
 
 ### 🐍 Python ile
 1. Repository'yi klonlayın:
@@ -61,15 +60,14 @@ python bakim_gui.py
 
 ### EXE Kullanımı
 - **macOS**: 10.15+ (Catalina ve üzeri)
-- **İnternet**: İlk çalıştırmada GitHub bağlantısı gerekli
+- **Windows**: Windows 10 ve üzeri
+- **Linux**: Ubuntu 18.04+ ve diğer modern dağıtımlar
 
 ### Python Geliştirme
 - Python 3.8+
 - PyQt6
 - pandas
 - openpyxl
-- requests
-- PyGithub
 
 ## 📖 Kullanım
 
@@ -102,10 +100,6 @@ python bakim_gui.py
 2. **Dışa Aktarma**: "📤 Excel Dışa Aktar" menüsünden
 3. **Sütun Eşleştirme**: Otomatik sütun tanıma
 
-### ☁️ GitHub Senkronizasyonu
-- **Otomatik Yedekleme**: Program kapanırken otomatik yedekleme
-- **Otomatik İndirme**: Program açılırken otomatik indirme
-- **Manuel İşlemler**: "Diğer İşlemler" menüsünden
 
 ## 🗂️ Proje Yapısı
 
@@ -160,11 +154,6 @@ pyinstaller --onefile --windowed --name=AracBakimYonetim \
 - **Şantiye Bazlı Filtreleme**: Her şantiye için ayrı araç ve bakım listesi
 - **Şantiye Geçişi**: Kolay şantiye değiştirme ve veri filtreleme
 
-### 🔄 GitHub Entegrasyonu
-- **Otomatik Senkronizasyon**: Git komutları ile
-- **Veri Güvenliği**: Tüm veriler GitHub'da yedekli
-- **Çoklu Cihaz**: Farklı bilgisayarlarda aynı veri
-- **Şantiye Bazlı Yedekleme**: Her şantiyenin verisi ayrı ayrı yedeklenir
 
 ### 📈 Excel Desteği
 - **İçe Aktarma**: Mevcut Excel dosyalarını import
@@ -174,11 +163,11 @@ pyinstaller --onefile --windowed --name=AracBakimYonetim \
 
 ## 🚨 Önemli Notlar
 
-- **İlk Çalıştırma**: İnternet bağlantısı gerekli (GitHub'dan veri indirme)
+- **İlk Çalıştırma**: Program yerel SQLite veritabanı ile çalışır
 - **Şantiye Seçimi**: Program açılışında varsayılan şantiye seçilir
-- **Veri Güvenliği**: Tüm veriler GitHub'da otomatik yedeklenir
-- **Çoklu Kullanım**: Aynı GitHub repo'sunu kullanan tüm cihazlar senkronize
+- **Veri Güvenliği**: Tüm veriler yerel veritabanında saklanır
 - **Şantiye Bağımsızlığı**: Her şantiyenin verisi ayrı ayrı yönetilir
+- **Yedekleme**: Düzenli olarak Excel export ile veri yedekleme önerilir
 
 ## 🔧 Geliştirme
 
