@@ -1,18 +1,37 @@
-# Araç Bakım Kayıtları Yönetim Sistemi 
+# Şantiye Yönetim Sistemi 
 
-Modern PyQt6 tabanlı araç bakım takip uygulaması. Araçlarınızın bakım geçmişini, kilometre takibini ve gelecek bakım planlarını yönetmenizi sağlar.
+Modern PyQt6 tabanlı şantiye ve araç bakım yönetim uygulaması. Şantiyelerinizi, araçlarınızı ve bakım süreçlerinizi merkezi olarak yönetmenizi sağlar.
 
-## 🚗 Özellikler
+## 🏗️ Özellikler
 
-- **Araç Yönetimi**: Araç ekleme, düzenleme ve silme
+### 🏢 Şantiye Yönetimi
+- **Çoklu Şantiye Desteği**: Birden fazla şantiye yönetimi
+- **Şantiye Bilgileri**: Lokasyon, sorumlu kişi ve durum takibi
+- **Şantiye Bazlı Araç Yönetimi**: Her şantiyeye özel araç listesi
+- **Şantiye Değiştirme**: Kolay şantiye geçişi ve veri filtreleme
+
+### 🚗 Araç Yönetimi
+- **Araç Kayıtları**: Plaka, kapı no, bölge ve durum bilgileri
+- **Araç Durumu**: Aktif/Pasif, Sağlam/Arızalı durum takibi
+- **Toplu İşlemler**: Şantiye bazlı toplu araç işlemleri
+- **Araç Transferi**: Araçları şantiyeler arası taşıma
+
+### 🔧 Bakım Yönetimi
 - **Bakım Kayıtları**: Detaylı bakım geçmişi takibi
 - **Kilometre Takibi**: Araç kilometrelerini kaydetme ve analiz
 - **Bakım Planlama**: Gelecek bakım tarihlerini planlama
+- **Personel Takibi**: Bakım yapan personel kayıtları
+
+### 📊 Analiz ve Raporlama
+- **Modern Dashboard**: KPI kartları ve analiz grafikleri
+- **Şantiye Bazlı İstatistikler**: Her şantiye için ayrı analiz
 - **Excel İçe/Dışa Aktarma**: Verilerinizi Excel formatında yedekleme
 - **GitHub Senkronizasyonu**: Veritabanını GitHub'da otomatik yedekleme
-- **Modern Dashboard**: KPI kartları ve analiz grafikleri
+
+### 💻 Teknik Özellikler
 - **Modern Arayüz**: Kullanıcı dostu PyQt6 arayüzü
 - **Veritabanı**: SQLite ile güvenli veri saklama
+- **Çoklu Platform**: Windows, macOS ve Linux desteği
 
 ## 🚀 Hızlı Başlangıç
 
@@ -54,17 +73,29 @@ python bakim_gui.py
 
 ## 📖 Kullanım
 
-### 🏠 Ana Sayfa (Dashboard)
+### 🏢 Şantiye Yönetimi
+1. **Şantiye Ekleme**: "🏗️ Şantiye Yönetimi" menüsünden yeni şantiye ekleyin
+2. **Şantiye Seçimi**: Üst menüden aktif şantiyeyi seçin
+3. **Şantiye Düzenleme**: Şantiye bilgilerini güncelleyin
+4. **Şantiye Silme**: Kullanılmayan şantiyeleri silin
+
+### 🚗 Araç Yönetimi
+1. **Araç Ekleme**: "➕ Yeni Araç" butonuna tıklayın
+2. **Araç Düzenleme**: Araç üzerine çift tıklayın
+3. **Durum Güncelleme**: Araç durumunu aktif/pasif, sağlam/arızalı olarak işaretleyin
+4. **Toplu İşlemler**: Şantiye bazlı toplu araç işlemleri yapın
+
+### 🔧 Bakım Kayıtları
+1. **Yeni Bakım**: "➕ Yeni Kayıt" butonuna tıklayın
+2. **Bakım Düzenleme**: Kayıt üzerine çift tıklayın
+3. **Bakım Silme**: Kayıt seçip "🗑️ Kayıt Sil" butonuna tıklayın
+4. **Arama**: Plaka ile arama yapın
+
+### 🏠 Dashboard (Ana Sayfa)
 - **KPI Kartları**: Toplam kayıt, araç sayısı, son bakım tarihi
+- **Şantiye Analizi**: Seçili şantiye bazında istatistikler
 - **Zaman Analizi**: Bu ay, bu hafta, yaklaşan bakımlar
 - **En Aktif Araçlar**: En çok bakım yapılan araçlar listesi
-- **Bölge Analizi**: Bölge bazında bakım istatistikleri
-
-### 📝 Kayıt Yönetimi
-1. **Yeni Kayıt**: "➕ Yeni Kayıt" butonuna tıklayın
-2. **Düzenleme**: Kayıt üzerine çift tıklayın
-3. **Silme**: Kayıt seçip "🗑️ Kayıt Sil" butonuna tıklayın
-4. **Arama**: Plaka ile arama yapın
 
 ### 📊 Excel İşlemleri
 1. **İçe Aktarma**: "📁 Excel İçe Aktar" menüsünden
@@ -114,27 +145,40 @@ pyinstaller --onefile --windowed --name=AracBakimYonetim \
 
 ## 🎯 Özellik Detayları
 
-### 📊 Dashboard
+### 📊 Dashboard (Şantiye Bazlı)
 - **6 Ana KPI Kartı**: Toplam kayıt, araç, son bakım, bu ay, bu hafta, yaklaşan bakım
-- **En Aktif Araçlar**: Top 5 araç listesi
-- **Bölge Analizi**: Bölge bazında istatistikler
+- **Şantiye Seçimi**: Aktif şantiye değiştirme dropdown'ı
+- **En Aktif Araçlar**: Seçili şantiyedeki en çok bakım yapılan araçlar
+- **Şantiye Analizi**: Şantiye bazında bakım istatistikleri
 - **Personel Analizi**: Bakım yapan personel istatistikleri
+- **Bölge Analizi**: Bölge bazında bakım dağılımı
+
+### 🏢 Şantiye Yönetimi Detayları
+- **Çoklu Şantiye**: Sınırsız şantiye ekleme ve yönetimi
+- **Şantiye Bilgileri**: Ad, lokasyon, sorumlu kişi bilgileri
+- **Şantiye Durumu**: Aktif/Pasif durum takibi
+- **Şantiye Bazlı Filtreleme**: Her şantiye için ayrı araç ve bakım listesi
+- **Şantiye Geçişi**: Kolay şantiye değiştirme ve veri filtreleme
 
 ### 🔄 GitHub Entegrasyonu
 - **Otomatik Senkronizasyon**: Git komutları ile
 - **Veri Güvenliği**: Tüm veriler GitHub'da yedekli
 - **Çoklu Cihaz**: Farklı bilgisayarlarda aynı veri
+- **Şantiye Bazlı Yedekleme**: Her şantiyenin verisi ayrı ayrı yedeklenir
 
 ### 📈 Excel Desteği
 - **İçe Aktarma**: Mevcut Excel dosyalarını import
 - **Dışa Aktarma**: Verileri Excel formatında export
 - **Sütun Eşleştirme**: Otomatik sütun tanıma
+- **Şantiye Bazlı Export**: Seçili şantiyenin verilerini ayrı export
 
 ## 🚨 Önemli Notlar
 
 - **İlk Çalıştırma**: İnternet bağlantısı gerekli (GitHub'dan veri indirme)
+- **Şantiye Seçimi**: Program açılışında varsayılan şantiye seçilir
 - **Veri Güvenliği**: Tüm veriler GitHub'da otomatik yedeklenir
 - **Çoklu Kullanım**: Aynı GitHub repo'sunu kullanan tüm cihazlar senkronize
+- **Şantiye Bağımsızlığı**: Her şantiyenin verisi ayrı ayrı yönetilir
 
 ## 🔧 Geliştirme
 
